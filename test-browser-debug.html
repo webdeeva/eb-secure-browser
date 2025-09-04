@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EB Domain Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #050505;
+            color: #c44901;
+        }
+        button {
+            padding: 10px 20px;
+            background: #c44901;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #d65502;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #161616;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>EB Domain Testing</h1>
+    
+    <button onclick="checkAPIs()">Check APIs Available</button>
+    <button onclick="testDomain('aquariusmaximus.guap')">Test aquariusmaximus.guap</button>
+    <button onclick="testDomain('https://aquariusmaximus.guap')">Test https://aquariusmaximus.guap</button>
+    <button onclick="navigateToEB()">Navigate to aquariusmaximus.guap</button>
+    
+    <div id="result" class="result"></div>
+    
+    <script>
+        const result = document.getElementById('result');
+        
+        function log(msg) {
+            result.textContent += msg + '\n';
+            console.log(msg);
+        }
+        
+        function checkAPIs() {
+            result.textContent = '';
+            log('Checking available APIs...');
+            log('window.ebDomains: ' + (window.ebDomains ? 'Available' : 'NOT AVAILABLE'));
+            if (window.ebDomains) {
+                log('Available methods: ' + Object.keys(window.ebDomains).join(', '));
+            }
+            log('window.electronAPI: ' + (window.electronAPI ? 'Available' : 'NOT AVAILABLE'));
+            if (window.electronAPI) {
+                log('Available methods: ' + Object.keys(window.electronAPI).join(', '));
+            }
+        }
+        
+        async function testDomain(domain) {
+            log('\n--- Testing domain: ' + domain + ' ---');
+            
+            if (!window.ebDomains) {
+                log('ERROR: EB Domains API not available!');
+                return;
+            }
+            
+            try {
+                log('Checking if EB domain...');
+                const isEB = await window.ebDomains.isEBDomain(domain);
+                log('Is EB Domain: ' + isEB);
+                
+                if (isEB) {
+                    log('Resolving domain...');
+                    const resolved = await window.ebDomains.resolveDomain(domain);
+                    log('Resolution result: ' + JSON.stringify(resolved, null, 2));
+                }
+            } catch (error) {
+                log('ERROR: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        function navigateToEB() {
+            log('\nNavigating to aquariusmaximus.guap...');
+            window.location.href = 'aquariusmaximus.guap';
+        }
+        
+        // Check on load
+        checkAPIs();
+    </script>
+</body>
+</html>

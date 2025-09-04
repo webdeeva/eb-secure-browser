@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results - Everything Black</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        html {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100% !important;
+        }
+        
+        body {
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow-y: visible !important;
+            overflow-x: hidden !important;
+            display: block !important;
+            flex-direction: unset !important;
+            position: relative !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .search-results-container {
+            width: 100%;
+            min-height: 100vh;
+            background: #ffffff;
+            padding-bottom: 50px;
+        }
+
+        /* Header Styles */
+        .search-header {
+            background: #050505;
+            padding: 20px;
+            border-bottom: 3px solid #c44901;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-small {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .logo-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .search-bar-wrapper {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 50px 12px 20px;
+            font-size: 16px;
+            background: #161616;
+            border: 2px solid #c44901;
+            border-radius: 25px;
+            color: #fff;
+            outline: none;
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-submit {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #c44901;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .search-submit:hover {
+            background: #ff6b1a;
+        }
+
+        .search-submit i {
+            color: #fff;
+        }
+
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.selected {
+            background: #f8f8f8;
+        }
+
+        /* Filter Panel */
+        .filters-container {
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            margin-top: 80px;
+        }
+
+        .filters-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .filters-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filters-title i {
+            color: #c44901;
+        }
+
+        .clear-filters {
+            background: none;
+            border: 1px solid #c44901;
+            color: #c44901;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        .clear-filters:hover {
+            background: #c44901;
+            color: #fff;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-select,
+        .filter-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select {
+            padding-right: 35px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .filter-select:hover,
+        .filter-input:hover {
+            border-color: #c44901;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #c44901;
+            box-shadow: 0 0 0 3px rgba(196, 73, 1, 0.1);
+        }
+
+        .filter-checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .filter-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .filter-checkbox label {
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        /* Active Filters Display */
+        .active-filters {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .active-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #c44901;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .active-filter-tag i {
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        /* Results Layout */
+        .results-layout {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            padding: 20px;
+            gap: 30px;
+            padding-bottom: 100px;
+        }
+
+        .main-results {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .results-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        #search-term {
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Result Items */
+        .result-item {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            border-color: #c44901;
+            box-shadow: 0 2px 8px rgba(196, 73, 1, 0.1);
+        }
+
+        .result-item.black-owned {
+            border-left: 4px solid #c44901;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            color: #c44901;
+            font-size: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .verified-badge {
+            color: #28a745;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .result-url {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .result-description {
+            color: #333;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .black-owned-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #c44901;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .black-owned-badge i {
+            font-size: 10px;
+        }
+
+        /* Premium Sidebar */
+        .premium-sidebar {
+            width: 300px;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .premium-header {
+            background: #050505;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .premium-content {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 20px;
+        }
+
+        .premium-item {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .premium-item:hover {
+            border-color: #c44901;
+            box-shadow: 0 2px 8px rgba(196, 73, 1, 0.1);
+        }
+
+        .premium-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .premium-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .premium-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Loading and Error States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Debug Info (hide in production) */
+        .debug-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            display: none; /* Hidden by default */
+        }
+
+        .debug-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* AI Enhancement Styles */
+        .ai-answer {
+            background: linear-gradient(135deg, #fef5ee 0%, #fdf0e6 100%);
+            border: 2px solid #c44901;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ai-answer-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .ai-answer-header i {
+            color: #c44901;
+            font-size: 20px;
+        }
+
+        .ai-answer-header h3 {
+            color: #333;
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .ai-answer-content {
+            color: #333;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .results-layout {
+                flex-direction: column;
+            }
+            
+            .premium-sidebar {
+                width: 100%;
+                position: relative;
+                top: 0;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="search-results-container">
+        <!-- Header -->
+        <div class="search-header">
+            <div class="header-content">
+                <div class="logo-small" onclick="window.location.href='landing.html'">
+                    <img src="assets/ebwhite.png" alt="Everything Black">
+                </div>
+                <div class="search-bar-wrapper">
+                    <input type="text" class="search-bar" id="search-input" placeholder="Search Black-owned businesses...">
+                    <button class="search-submit" id="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="autocomplete-dropdown" id="autocomplete-dropdown">
+                        <!-- Autocomplete suggestions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-container">
+            <div class="filters-wrapper">
+                <div class="filters-header">
+                    <div class="filters-title">
+                        <i class="fas fa-filter"></i>
+                        Filters
+                    </div>
+                    <button class="clear-filters" id="clear-filters">Clear All</button>
+                </div>
+                <div class="filters-grid">
+                    <!-- Category Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Category</label>
+                        <select class="filter-select" id="filter-category">
+                            <option value="">All Categories</option>
+                            <option value="restaurants">Restaurants & Food</option>
+                            <option value="beauty">Beauty & Hair</option>
+                            <option value="tech">Technology</option>
+                            <option value="fashion">Fashion & Apparel</option>
+                            <option value="health">Health & Wellness</option>
+                            <option value="professional">Professional Services</option>
+                            <option value="retail">Retail & Shopping</option>
+                            <option value="entertainment">Entertainment</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Location Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Location</label>
+                        <input type="text" class="filter-input" id="filter-location" placeholder="City or ZIP code">
+                    </div>
+                    
+                    <!-- Distance Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Distance</label>
+                        <select class="filter-select" id="filter-distance">
+                            <option value="">Any Distance</option>
+                            <option value="5">Within 5 miles</option>
+                            <option value="10">Within 10 miles</option>
+                            <option value="25">Within 25 miles</option>
+                            <option value="50">Within 50 miles</option>
+                            <option value="100">Within 100 miles</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filters -->
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <div class="filter-checkbox-group">
+                            <div class="filter-checkbox">
+                                <input type="checkbox" id="filter-verified" value="verified">
+                                <label for="filter-verified">Verified Only</label>
+                            </div>
+                            <div class="filter-checkbox">
+                                <input type="checkbox" id="filter-featured" value="featured">
+                                <label for="filter-featured">Featured</label>
+                            </div>
+                            <div class="filter-checkbox">
+                                <input type="checkbox" id="filter-premium" value="premium">
+                                <label for="filter-premium">Premium</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <div class="active-filters" id="active-filters" style="display: none;">
+                    <!-- Active filter tags will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="results-layout">
+            <div class="main-results">
+                <div class="debug-info" id="debug-info"></div>
+                
+                <div class="results-info" id="results-info">
+                    About <span id="results-count">0</span> results for "<span id="search-term"></span>"
+                </div>
+                
+                <div id="results-container">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Searching...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium Sidebar -->
+            <div class="premium-sidebar">
+                <div class="premium-header">
+                    Premium Listings
+                </div>
+                <div class="premium-content">
+                    <div class="premium-item" onclick="window.location.href='#'">
+                        <div class="premium-title">Elite Web Design Studio</div>
+                        <p class="premium-description">
+                            Award-winning Black-owned design agency creating stunning websites for businesses
+                        </p>
+                        <span class="premium-badge">PREMIUM</span>
+                    </div>
+
+                    <div class="premium-item" onclick="window.location.href='#'">
+                        <div class="premium-title">Digital Marketing Masters</div>
+                        <p class="premium-description">
+                            Full-service digital marketing agency helping Black businesses grow online
+                        </p>
+                        <span class="premium-badge">PREMIUM</span>
+                    </div>
+
+                    <div class="premium-item" onclick="window.location.href='#'">
+                        <div class="premium-title">Cloud Solutions Pro</div>
+                        <p class="premium-description">
+                            Enterprise cloud migration and management services by certified professionals
+                        </p>
+                        <span class="premium-badge">PREMIUM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Toggle -->
+    <div class="debug-toggle" onclick="toggleDebug()">
+        <i class="fas fa-bug"></i> Debug
+    </div>
+
+    <script>
+        // Debug logging
+        let debugMode = false;
+        
+        function log(message, data = null) {
+            if (debugMode) console.log(message, data);
+            const debugEl = document.getElementById('debug-info');
+            if (debugMode && debugEl) {
+                debugEl.textContent += `${new Date().toLocaleTimeString()} - ${message}`;
+                if (data) {
+                    debugEl.textContent += `: ${JSON.stringify(data, null, 2)}`;
+                }
+                debugEl.textContent += '\n';
+            }
+        }
+        
+        function toggleDebug() {
+            debugMode = !debugMode;
+            document.getElementById('debug-info').style.display = debugMode ? 'block' : 'none';
+            log('Debug mode ' + (debugMode ? 'enabled' : 'disabled'));
+        }
+
+        // Get query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('q') || '';
+        
+        // Set search term in UI
+        document.getElementById('search-term').textContent = searchQuery;
+        document.getElementById('search-input').value = searchQuery;
+        
+        // API configuration
+        const API_BASE = 'https://eb2new-backend-48935.ondigitalocean.app';
+        
+        // Filter state
+        const filters = {
+            category: '',
+            location: '',
+            distance: '',
+            verified: false,
+            featured: false,
+            premium: false
+        };
+        
+        // Perform search
+        async function performSearch(query) {
+            if (!query) {
+                log('No query provided');
+                return;
+            }
+            
+            log('Starting search for', query);
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+            
+            try {
+                // Try multiple endpoints
+                let results = [];
+                
+                // Try debug endpoint first
+                try {
+                    const debugUrl = `${API_BASE}/api/v1/debug/search?q=${encodeURIComponent(query)}`;
+                    log('Trying debug endpoint', debugUrl);
+                    
+                    const debugResponse = await fetch(debugUrl);
+                    const debugData = await debugResponse.json();
+                    
+                    if (debugData.success && debugData.results) {
+                        results = debugData.results;
+                        document.getElementById('results-count').textContent = debugData.results_found || results.length;
+                    }
+                } catch (error) {
+                    log('Debug endpoint failed', error.message);
+                }
+                
+                // Try main search endpoint
+                if (results.length === 0) {
+                    try {
+                        const searchUrl = `${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=20`;
+                        log('Trying main search endpoint', searchUrl);
+                        
+                        const searchResponse = await fetch(searchUrl);
+                        const searchData = await searchResponse.json();
+                        
+                        if (searchData.data && searchData.data.results) {
+                            results = searchData.data.results;
+                            document.getElementById('results-count').textContent = searchData.data.total_results || results.length;
+                        }
+                    } catch (error) {
+                        log('Main search endpoint failed', error.message);
+                    }
+                }
+                
+                // Display results
+                if (results.length > 0) {
+                    resultsContainer.innerHTML = '';
+                    
+                    results.forEach(result => {
+                        const resultHtml = `
+                            <div class="result-item black-owned">
+                                <div class="result-header">
+                                    <div>
+                                        <a href="#" class="result-title">
+                                            ${result.name}
+                                            ${result.verification_status === 'verified' ? '<i class="fas fa-check-circle verified-badge" title="Verified Black-Owned"></i>' : ''}
+                                        </a>
+                                        <div class="result-url">${result.website || result.url || (result.slug ? `www.${result.slug}.com` : 'Visit website')}</div>
+                                    </div>
+                                    <span class="black-owned-badge">
+                                        <i class="fas fa-star"></i>
+                                        Black Owned
+                                    </span>
+                                </div>
+                                <p class="result-description">${result.description || result.short_description || 'No description available'}</p>
+                                <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                                    ${result.city ? `<i class="fas fa-map-marker-alt"></i> ${result.city}, ${result.state_province || result.state || ''} • ` : ''}
+                                    ${result.categories ? `${Array.isArray(result.categories) ? result.categories.join(', ') : result.categories}` : ''}
+                                </div>
+                            </div>
+                        `;
+                        resultsContainer.innerHTML += resultHtml;
+                    });
+                } else {
+                    // No results found
+                    resultsContainer.innerHTML = `
+                        <div class="error">
+                            No results found for "${query}". Try different search terms.
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                log('Error', error.message);
+                resultsContainer.innerHTML = `
+                    <div class="error">
+                        Error performing search: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle search
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                window.location.href = `search-results-styled.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('search-btn').addEventListener('click', handleSearch);
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch();
+        });
+        
+        // Filter event listeners
+        document.getElementById('filter-category').addEventListener('change', updateFilters);
+        document.getElementById('filter-location').addEventListener('input', debounce(updateFilters, 500));
+        document.getElementById('filter-distance').addEventListener('change', updateFilters);
+        document.getElementById('filter-verified').addEventListener('change', updateFilters);
+        document.getElementById('filter-featured').addEventListener('change', updateFilters);
+        document.getElementById('filter-premium').addEventListener('change', updateFilters);
+        document.getElementById('clear-filters').addEventListener('click', clearAllFilters);
+        
+        function updateFilters() {
+            filters.category = document.getElementById('filter-category').value;
+            filters.location = document.getElementById('filter-location').value;
+            filters.distance = document.getElementById('filter-distance').value;
+            filters.verified = document.getElementById('filter-verified').checked;
+            filters.featured = document.getElementById('filter-featured').checked;
+            filters.premium = document.getElementById('filter-premium').checked;
+            
+            // Show/hide clear button
+            const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+                return value !== '' && value !== false;
+            });
+            document.getElementById('clear-filters').style.display = hasActiveFilters ? 'block' : 'none';
+            
+            // Update active filters display
+            updateActiveFilters();
+            
+            // Perform filtered search
+            performFilteredSearch();
+        }
+        
+        function updateActiveFilters() {
+            const activeFiltersContainer = document.getElementById('active-filters');
+            const activeFilters = [];
+            
+            if (filters.category) {
+                activeFilters.push({ type: 'category', value: filters.category, label: `Category: ${filters.category}` });
+            }
+            if (filters.location) {
+                activeFilters.push({ type: 'location', value: filters.location, label: `Location: ${filters.location}` });
+            }
+            if (filters.distance) {
+                activeFilters.push({ type: 'distance', value: filters.distance, label: `Within ${filters.distance} miles` });
+            }
+            if (filters.verified) {
+                activeFilters.push({ type: 'verified', value: true, label: 'Verified Only' });
+            }
+            if (filters.featured) {
+                activeFilters.push({ type: 'featured', value: true, label: 'Featured' });
+            }
+            if (filters.premium) {
+                activeFilters.push({ type: 'premium', value: true, label: 'Premium' });
+            }
+            
+            if (activeFilters.length > 0) {
+                activeFiltersContainer.style.display = 'flex';
+                activeFiltersContainer.innerHTML = activeFilters.map(filter => `
+                    <span class="active-filter-tag" data-filter="${filter.type}">
+                        ${filter.label}
+                        <i class="fas fa-times" onclick="removeFilter('${filter.type}')"></i>
+                    </span>
+                `).join('');
+            } else {
+                activeFiltersContainer.style.display = 'none';
+            }
+        }
+        
+        function removeFilter(filterType) {
+            if (filterType === 'category') {
+                document.getElementById('filter-category').value = '';
+            } else if (filterType === 'location') {
+                document.getElementById('filter-location').value = '';
+            } else if (filterType === 'distance') {
+                document.getElementById('filter-distance').value = '';
+            } else if (filterType === 'verified') {
+                document.getElementById('filter-verified').checked = false;
+            } else if (filterType === 'featured') {
+                document.getElementById('filter-featured').checked = false;
+            } else if (filterType === 'premium') {
+                document.getElementById('filter-premium').checked = false;
+            }
+            updateFilters();
+        }
+        
+        function clearAllFilters() {
+            document.getElementById('filter-category').value = '';
+            document.getElementById('filter-location').value = '';
+            document.getElementById('filter-distance').value = '';
+            document.getElementById('filter-verified').checked = false;
+            document.getElementById('filter-featured').checked = false;
+            document.getElementById('filter-premium').checked = false;
+            updateFilters();
+        }
+        
+        function performFilteredSearch() {
+            // For now, just perform regular search
+            // In production, this would pass filters to the API
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                performSearch(query);
+            }
+        }
+        
+        // Debounce helper
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Perform initial search if query exists
+        if (searchQuery) {
+            performSearch(searchQuery);
+        }
+    </script>
+</body>
+</html>

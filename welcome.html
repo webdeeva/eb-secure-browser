@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Everything Black Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: -75px;
+        }
+
+        .welcome-image {
+            max-width: 50%;
+            max-height: 40vh;
+            object-fit: contain;
+            opacity: 0;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 1.5s forwards;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px 20px;
+            background: transparent;
+            border: 2px solid #ffffff;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-bar:focus {
+            border-color: #C44901;
+            box-shadow: 0 0 15px rgba(196, 73, 1, 0.3);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #C44901;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            background: #d65502;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .search-button svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .suggestions-container {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 2s forwards;
+        }
+
+        .suggestions-title {
+            color: #C44901;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid rgba(196, 73, 1, 0.5);
+            border-radius: 20px;
+            color: #C44901;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-chip:hover {
+            background: #C44901;
+            color: #000000;
+            border-color: #C44901;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #C44901;
+            border-radius: 15px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .autocomplete-item {
+            padding: 12px 20px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .autocomplete-item:hover {
+            background: rgba(196, 73, 1, 0.2);
+        }
+
+        .autocomplete-item.selected {
+            background: rgba(196, 73, 1, 0.3);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="content-container">
+        <img src="assets/3.png" alt="Welcome" class="welcome-image" id="sourceImage">
+        
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Search the web...">
+            <button class="search-button" id="searchButton">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
+            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+        </div>
+        
+        <div class="suggestions-container">
+            <div class="suggestions-title">Discover Black Excellence</div>
+            <div class="suggestion-chips">
+                <div class="suggestion-chip" data-search="Black-owned businesses near me">Black-Owned Businesses</div>
+                <div class="suggestion-chip" data-search="African American history">Black History</div>
+                <div class="suggestion-chip" data-search="Black news and media">Black News</div>
+                <div class="suggestion-chip" data-search="African culture and heritage">African Culture</div>
+                <div class="suggestion-chip" data-search="Black art and artists">Black Art</div>
+                <div class="suggestion-chip" data-search="HBCU colleges">HBCUs</div>
+                <div class="suggestion-chip" data-search="Black tech entrepreneurs">Black Tech</div>
+                <div class="suggestion-chip" data-search="African diaspora">African Diaspora</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple particle effect that definitely works
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const img = document.getElementById('sourceImage');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        const particleCount = 200;
+        
+        // Create random particles
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                size: Math.random() * 3 + 1,
+                opacity: Math.random() * 0.5 + 0.5
+            });
+        }
+        
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // Wrap around screen
+                if (particle.x < 0) particle.x = canvas.width;
+                if (particle.x > canvas.width) particle.x = 0;
+                if (particle.y < 0) particle.y = canvas.height;
+                if (particle.y > canvas.height) particle.y = 0;
+                
+                // Draw particle
+                ctx.fillStyle = `rgba(196, 73, 1, ${particle.opacity})`;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Start animation
+        animate();
+        
+        // Fade in the image after 1 second
+        setTimeout(() => {
+            img.style.transition = 'opacity 2s ease-out';
+            img.style.opacity = '1';
+        }, 1000);
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        const suggestionChips = document.querySelectorAll('.suggestion-chip');
+        
+        // Autocomplete suggestions focused on Black/African content
+        const searchSuggestions = [
+            "Black-owned restaurants",
+            "Black-owned businesses near me",
+            "Black history month",
+            "Black inventors and innovators",
+            "Black authors and books",
+            "Black movies and directors",
+            "Black music artists",
+            "Black fashion designers",
+            "African American museums",
+            "African cuisine recipes",
+            "African art galleries",
+            "African music and dance",
+            "African languages",
+            "African travel destinations",
+            "HBCU universities",
+            "Black excellence stories",
+            "Black entrepreneurs",
+            "Black health and wellness",
+            "Black financial literacy",
+            "Black tech communities",
+            "African diaspora news",
+            "Black Lives Matter resources",
+            "Black culture events",
+            "African American heritage sites"
+        ];
+        
+        let selectedIndex = -1;
+        
+        // Handle search input
+        searchInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            selectedIndex = -1;
+            
+            if (value.length > 0) {
+                const filtered = searchSuggestions.filter(suggestion => 
+                    suggestion.toLowerCase().includes(value)
+                );
+                
+                if (filtered.length > 0) {
+                    showAutocomplete(filtered.slice(0, 8)); // Show max 8 suggestions
+                } else {
+                    hideAutocomplete();
+                }
+            } else {
+                hideAutocomplete();
+            }
+        });
+        
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', (e) => {
+            const items = autocompleteDropdown.querySelectorAll('.autocomplete-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    searchInput.value = items[selectedIndex].textContent;
+                    hideAutocomplete();
+                }
+                performSearch();
+            } else if (e.key === 'Escape') {
+                hideAutocomplete();
+            }
+        });
+        
+        // Show autocomplete dropdown
+        function showAutocomplete(suggestions) {
+            autocompleteDropdown.innerHTML = suggestions.map((suggestion, index) => 
+                `<div class="autocomplete-item" data-index="${index}">${suggestion}</div>`
+            ).join('');
+            autocompleteDropdown.style.display = 'block';
+            
+            // Add click handlers
+            autocompleteDropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    searchInput.value = item.textContent;
+                    hideAutocomplete();
+                    performSearch();
+                });
+            });
+        }
+        
+        // Hide autocomplete dropdown
+        function hideAutocomplete() {
+            autocompleteDropdown.style.display = 'none';
+            selectedIndex = -1;
+        }
+        
+        // Update selection highlighting
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Handle search button click
+        searchButton.addEventListener('click', performSearch);
+        
+        // Handle suggestion chip clicks
+        suggestionChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                searchInput.value = chip.getAttribute('data-search');
+                performSearch();
+            });
+        });
+        
+        // Perform search (placeholder for now)
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (query) {
+                console.log('Searching for:', query);
+                // This will be replaced with actual search functionality
+                alert(`Search functionality coming soon!\nYou searched for: "${query}"`);
+            }
+        }
+        
+        // Hide autocomplete when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                hideAutocomplete();
+            }
+        });
+    </script>
+</body>
+</html>

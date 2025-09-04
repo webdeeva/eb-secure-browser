@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Search Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .result {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff6b1a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minimal Search Test</h1>
+    
+    <div class="info">
+        <h3>URL Information</h3>
+        <p>Current URL: <code id="current-url"></code></p>
+        <p>Search Params: <code id="search-params"></code></p>
+        <p>Query Value: <code id="query-value"></code></p>
+    </div>
+    
+    <div>
+        <h3>Test Direct API Call</h3>
+        <button onclick="testAPI()">Test API</button>
+        <button onclick="testDebugAPI()">Test Debug API</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        // Display URL info
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('search-params').textContent = window.location.search;
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('q') || 'web development';
+        document.getElementById('query-value').textContent = query;
+        
+        async function testAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch(`https://eb2new-backend-48935.ondigitalocean.app/api/v1/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h3>API Response</h3>
+                    <div class="info">
+                        <p>Status: ${response.status}</p>
+                        <p>Success: ${data.success}</p>
+                        <p>Results: ${data.data?.results?.length || 0}</p>
+                    </div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h3>API Error</h3>
+                    <div class="info" style="background: #ffcccc;">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testDebugAPI() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing Debug API...</p>';
+            
+            try {
+                const response = await fetch(`https://eb2new-backend-48935.ondigitalocean.app/api/v1/debug/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h3>Debug API Response</h3>
+                    <div class="info">
+                        <p>Status: ${response.status}</p>
+                        <p>Results Found: ${data.results_found || 0}</p>
+                    </div>
+                `;
+                
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(result => {
+                        resultsDiv.innerHTML += `
+                            <div class="result">
+                                <h4>${result.name}</h4>
+                                <p>${result.description}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    resultsDiv.innerHTML += '<p>No results found</p>';
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <h3>Debug API Error</h3>
+                    <div class="info" style="background: #ffcccc;">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

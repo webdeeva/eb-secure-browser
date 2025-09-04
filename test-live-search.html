@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Live Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .test-button:hover {
+            background: #a03801;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Live Search API</h1>
+    <p>Click the buttons below to test the search functionality:</p>
+    
+    <button class="test-button" onclick="testDebugSearch('test')">Test Debug Search: "test"</button>
+    <button class="test-button" onclick="testDebugSearch('She Interactive')">Test Debug Search: "She Interactive"</button>
+    <button class="test-button" onclick="testDebugSearch('web development')">Test Debug Search: "web development"</button>
+    <button class="test-button" onclick="testMainSearch('test')">Test Main Search: "test"</button>
+    <button class="test-button" onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type ? ` class="${type}"` : '';
+            resultsDiv.innerHTML += `<div${className}>[${timestamp}] ${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            resultsDiv.innerHTML = '';
+        }
+        
+        async function testDebugSearch(query) {
+            log(`\n=== Testing Debug Search for: "${query}" ===`);
+            
+            try {
+                const url = `https://eb2new-backend-48935.ondigitalocean.app/api/v1/debug/search?q=${encodeURIComponent(query)}`;
+                log(`URL: ${url}`);
+                
+                const response = await fetch(url);
+                log(`Response Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`Response Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+                
+                if (data.results && data.results.length > 0) {
+                    log(`\nFound ${data.results.length} result(s):`, 'success');
+                    data.results.forEach((result, index) => {
+                        log(`\n${index + 1}. ${result.name}`);
+                        log(`   Description: ${result.description || 'N/A'}`);
+                        log(`   Location: ${result.city}, ${result.state_province}`);
+                        log(`   Website: ${result.website_url || 'N/A'}`);
+                    });
+                } else {
+                    log('\nNo results found.', 'error');
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMainSearch(query) {
+            log(`\n=== Testing Main Search for: "${query}" ===`);
+            
+            try {
+                const url = `https://eb2new-backend-48935.ondigitalocean.app/api/v1/search?q=${encodeURIComponent(query)}`;
+                log(`URL: ${url}`);
+                
+                const response = await fetch(url);
+                log(`Response Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`Response Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+                
+                if (data.data && data.data.results && data.data.results.length > 0) {
+                    log(`\nFound ${data.data.results.length} result(s):`, 'success');
+                    data.data.results.forEach((result, index) => {
+                        log(`\n${index + 1}. ${result.name}`);
+                        log(`   Description: ${result.description || 'N/A'}`);
+                        log(`   Categories: ${result.categories ? result.categories.join(', ') : 'N/A'}`);
+                    });
+                } else {
+                    log('\nNo results found.', 'error');
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-test on load
+        window.onload = () => {
+            log('Page loaded. Click a button to test the search functionality.');
+        };
+    </script>
+</body>
+</html>

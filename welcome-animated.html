@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Everything Black Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .welcome-image {
+            max-width: 50%;
+            max-height: 50vh;
+            object-fit: contain;
+            opacity: 0;
+            display: none;
+        }
+
+        .loading-text {
+            position: absolute;
+            bottom: 10%;
+            color: #C44901;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <img src="assets/3.png" alt="Welcome" class="welcome-image" id="sourceImage">
+    <div class="loading-text">Everything Black Browser</div>
+
+    <script>
+        class ParticleAnimation {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.sourceImage = document.getElementById('sourceImage');
+                this.particles = [];
+                this.animationComplete = false;
+                
+                // Animation parameters
+                this.particleSize = 2; // Size of each particle
+                this.particleGap = 4; // Gap between particles
+                this.disperseRadius = 300; // How far particles spread initially
+                this.animationDuration = 2500; // Total animation time in ms
+                this.startTime = null;
+                
+                this.init();
+            }
+
+            init() {
+                // Set canvas size
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+
+                // Wait for image to load
+                if (this.sourceImage.complete) {
+                    this.createParticles();
+                } else {
+                    this.sourceImage.onload = () => this.createParticles();
+                }
+
+                // Handle resize
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+            }
+
+            createParticles() {
+                // Create temporary canvas to get image data
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Calculate image dimensions to maintain aspect ratio
+                const maxWidth = this.canvas.width * 0.5;
+                const maxHeight = this.canvas.height * 0.5;
+                const scale = Math.min(
+                    maxWidth / this.sourceImage.naturalWidth,
+                    maxHeight / this.sourceImage.naturalHeight
+                );
+                
+                const width = this.sourceImage.naturalWidth * scale;
+                const height = this.sourceImage.naturalHeight * scale;
+                
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                
+                // Draw image to temporary canvas
+                tempCtx.drawImage(this.sourceImage, 0, 0, width, height);
+                
+                // Get image data
+                const imageData = tempCtx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+                
+                // Calculate center position
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                const offsetX = centerX - width / 2;
+                const offsetY = centerY - height / 2;
+                
+                // Create particles from image pixels
+                for (let y = 0; y < height; y += this.particleGap) {
+                    for (let x = 0; x < width; x += this.particleGap) {
+                        const index = (y * width + x) * 4;
+                        const r = data[index];
+                        const g = data[index + 1];
+                        const b = data[index + 2];
+                        const a = data[index + 3];
+                        
+                        // Only create particle if pixel is not transparent
+                        if (a > 128) {
+                            const particle = {
+                                // Final position
+                                targetX: x + offsetX,
+                                targetY: y + offsetY,
+                                // Starting position (dispersed)
+                                x: 0,
+                                y: 0,
+                                // Color
+                                r, g, b, a,
+                                // Random properties for organic movement
+                                delay: Math.random() * 500,
+                                speed: 0.02 + Math.random() * 0.03,
+                                radius: this.particleSize
+                            };
+                            
+                            // Set initial dispersed position
+                            const angle = Math.random() * Math.PI * 2;
+                            const distance = this.disperseRadius + Math.random() * 100;
+                            particle.x = particle.targetX + Math.cos(angle) * distance;
+                            particle.y = particle.targetY + Math.sin(angle) * distance;
+                            
+                            this.particles.push(particle);
+                        }
+                    }
+                }
+                
+                // Start animation
+                this.animate();
+            }
+
+            animate() {
+                if (!this.startTime) {
+                    this.startTime = performance.now();
+                }
+                
+                const currentTime = performance.now();
+                const elapsed = currentTime - this.startTime;
+                const progress = Math.min(elapsed / this.animationDuration, 1);
+                
+                // Clear canvas
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw particles
+                this.particles.forEach(particle => {
+                    if (elapsed > particle.delay) {
+                        const particleProgress = Math.min((elapsed - particle.delay) / (this.animationDuration - particle.delay), 1);
+                        
+                        // Easing function for smooth animation
+                        const easeProgress = this.easeInOutCubic(particleProgress);
+                        
+                        // Calculate current position
+                        particle.x = particle.x + (particle.targetX - particle.x) * easeProgress * particle.speed;
+                        particle.y = particle.y + (particle.targetY - particle.y) * easeProgress * particle.speed;
+                        
+                        // Draw particle
+                        this.ctx.fillStyle = `rgba(${particle.r}, ${particle.g}, ${particle.b}, ${particle.a / 255})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        // Add glow effect for brighter particles
+                        if (particle.r > 200 || particle.g > 200 || particle.b > 200) {
+                            this.ctx.shadowBlur = 10;
+                            this.ctx.shadowColor = `rgba(${particle.r}, ${particle.g}, ${particle.b}, 0.5)`;
+                            this.ctx.fill();
+                            this.ctx.shadowBlur = 0;
+                        }
+                    }
+                });
+                
+                // Continue animation or show final image
+                if (progress < 1) {
+                    requestAnimationFrame(() => this.animate());
+                } else if (!this.animationComplete) {
+                    this.animationComplete = true;
+                    this.showFinalImage();
+                }
+            }
+
+            easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            showFinalImage() {
+                // Fade out canvas and show actual image
+                this.canvas.style.transition = 'opacity 0.5s ease-out';
+                this.canvas.style.opacity = '0';
+                
+                // Show and fade in the actual image
+                this.sourceImage.style.display = 'block';
+                setTimeout(() => {
+                    this.sourceImage.style.transition = 'opacity 0.5s ease-out';
+                    this.sourceImage.style.opacity = '1';
+                }, 50);
+                
+                // Remove canvas after transition
+                setTimeout(() => {
+                    this.canvas.remove();
+                }, 600);
+            }
+        }
+
+        // Start animation when page loads
+        window.addEventListener('load', () => {
+            new ParticleAnimation();
+        });
+    </script>
+</body>
+</html>

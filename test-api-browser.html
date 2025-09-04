@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API in Browser</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #a03701;
+        }
+        .results {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Test - Direct Browser</h1>
+    
+    <div class="test-section">
+        <h2>Test Health Endpoint</h2>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="health-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Search</h2>
+        <input type="text" id="search-query" value="web development" style="width: 300px; padding: 8px;">
+        <button onclick="testSearch()">Test Search</button>
+        <button onclick="testDebugSearch()">Test Debug Search</button>
+        <div id="search-results" class="results" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Business List</h2>
+        <button onclick="testBusinesses()">Test Debug Businesses</button>
+        <div id="business-results" class="results" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://eb2new-backend-48935.ondigitalocean.app';
+
+        async function testHealth() {
+            const resultsEl = document.getElementById('health-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/health`);
+                const data = await response.json();
+                resultsEl.className = response.ok ? 'results success' : 'results error';
+                resultsEl.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultsEl.className = 'results error';
+                resultsEl.innerHTML = `Error: ${error.message}\n\nThis might be a CORS issue if you see a network error.`;
+            }
+        }
+
+        async function testSearch() {
+            const query = document.getElementById('search-query').value;
+            const resultsEl = document.getElementById('search-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = 'Searching...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=5`);
+                const data = await response.json();
+                resultsEl.className = response.ok ? 'results' : 'results error';
+                resultsEl.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultsEl.className = 'results error';
+                resultsEl.innerHTML = `Error: ${error.message}\n\nThis might be a CORS issue. Check browser console for details.`;
+            }
+        }
+
+        async function testDebugSearch() {
+            const query = document.getElementById('search-query').value;
+            const resultsEl = document.getElementById('search-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = 'Debug searching...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/debug/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                resultsEl.className = response.ok ? 'results success' : 'results error';
+                resultsEl.innerHTML = `Debug Search - Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultsEl.className = 'results error';
+                resultsEl.innerHTML = `Error: ${error.message}\n\nThis might be a CORS issue. Check browser console for details.`;
+            }
+        }
+
+        async function testBusinesses() {
+            const resultsEl = document.getElementById('business-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = 'Loading businesses...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/debug/businesses`);
+                const data = await response.json();
+                resultsEl.className = response.ok ? 'results success' : 'results error';
+                resultsEl.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultsEl.className = 'results error';
+                resultsEl.innerHTML = `Error: ${error.message}\n\nThis might be a CORS issue. Check browser console for details.`;
+            }
+        }
+
+        // Test health on load
+        window.onload = () => {
+            console.log('API Base URL:', API_BASE);
+            console.log('Open the browser console to see any CORS or network errors');
+        };
+    </script>
+</body>
+</html>

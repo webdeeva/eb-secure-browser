@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results - Everything Black</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .search-header {
+            background: #050505;
+            padding: 20px;
+            border-bottom: 3px solid #c44901;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-small {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+        }
+        
+        .logo-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .search-bar {
+            flex: 1;
+            max-width: 600px;
+            padding: 12px 20px;
+            font-size: 16px;
+            background: #161616;
+            border: 2px solid #c44901;
+            border-radius: 25px;
+            color: #fff;
+            outline: none;
+        }
+        
+        .main-content {
+            margin-top: 100px;
+            padding: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .results-info {
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        #search-term {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .result-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.2s;
+        }
+        
+        .result-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .result-title {
+            color: #1a0dab;
+            font-size: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        
+        .result-title:hover {
+            text-decoration: underline;
+        }
+        
+        .result-description {
+            color: #545454;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        
+        .black-owned-badge {
+            display: inline-block;
+            background: #c44901;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-header">
+        <div class="header-content">
+            <div class="logo-small" onclick="window.location.href='landing.html'">
+                <img src="assets/ebwhite.png" alt="Everything Black">
+            </div>
+            <input type="text" class="search-bar" id="search-input" placeholder="Search...">
+            <button id="search-btn" style="background: #c44901; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="debug-info" id="debug-info"></div>
+        
+        <div class="results-info">
+            Results for "<span id="search-term"></span>"
+        </div>
+        
+        <div id="results-container">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging
+        function log(message, data = null) {
+            console.log(message, data);
+            const debugEl = document.getElementById('debug-info');
+            debugEl.textContent += `${new Date().toLocaleTimeString()} - ${message}`;
+            if (data) {
+                debugEl.textContent += `: ${JSON.stringify(data, null, 2)}`;
+            }
+            debugEl.textContent += '\n';
+        }
+
+        // Get query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('q') || '';
+        
+        log('Page loaded');
+        log('URL', window.location.href);
+        log('Search query', searchQuery);
+        
+        // Set search term in UI
+        document.getElementById('search-term').textContent = searchQuery;
+        document.getElementById('search-input').value = searchQuery;
+        
+        // API configuration
+        const API_BASE = 'https://eb2new-backend-48935.ondigitalocean.app';
+        
+        // Perform search
+        async function performSearch(query) {
+            if (!query) {
+                log('No query provided');
+                return;
+            }
+            
+            log('Starting search for', query);
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
+            
+            try {
+                // Try the debug endpoint first (we know it works)
+                const debugUrl = `${API_BASE}/api/v1/debug/search?q=${encodeURIComponent(query)}`;
+                log('Calling API', debugUrl);
+                
+                const response = await fetch(debugUrl);
+                log('Response status', response.status);
+                
+                const data = await response.json();
+                log('Response data', data);
+                
+                // Display results
+                if (data.success && data.results && data.results.length > 0) {
+                    resultsContainer.innerHTML = '';
+                    
+                    data.results.forEach(result => {
+                        const resultHtml = `
+                            <div class="result-item">
+                                <a href="#" class="result-title">${result.name}</a>
+                                <span class="black-owned-badge">Black Owned</span>
+                                <p class="result-description">${result.description}</p>
+                            </div>
+                        `;
+                        resultsContainer.innerHTML += resultHtml;
+                    });
+                    
+                    // Update results count
+                    document.querySelector('.results-info').innerHTML = 
+                        `${data.results_found} results for "<span id="search-term">${query}</span>"`;
+                } else {
+                    // No results found
+                    resultsContainer.innerHTML = `
+                        <div class="error">
+                            No results found for "${query}". Try different search terms.
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                log('Error', error.message);
+                resultsContainer.innerHTML = `
+                    <div class="error">
+                        Error performing search: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Handle search button click
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                window.location.href = `search-results-new.html?q=${encodeURIComponent(query)}`;
+            }
+        });
+        
+        // Handle enter key in search input
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                if (query) {
+                    window.location.href = `search-results-new.html?q=${encodeURIComponent(query)}`;
+                }
+            }
+        });
+        
+        // Perform initial search if query exists
+        if (searchQuery) {
+            performSearch(searchQuery);
+        } else {
+            document.getElementById('results-container').innerHTML = 
+                '<div class="error">No search query provided</div>';
+        }
+    </script>
+</body>
+</html>

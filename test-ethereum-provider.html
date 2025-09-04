@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ethereum Provider Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #933600;
+        }
+        .result {
+            background: #333;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ethereum Provider Test</h1>
+    
+    <div class="result" id="status">Checking ethereum provider...</div>
+    
+    <button onclick="checkProvider()">Check Provider</button>
+    <button onclick="requestAccounts()">Request Accounts</button>
+    <button onclick="getAccounts()">Get Accounts</button>
+    <button onclick="getChainId()">Get Chain ID</button>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        function log(message) {
+            statusDiv.textContent += '\n' + message;
+            console.log(message);
+        }
+        
+        // Initial check - wait a bit for preload script to inject ethereum
+        window.addEventListener('load', () => {
+            // Give preload script time to inject ethereum provider
+            setTimeout(() => {
+                checkProvider();
+            }, 100);
+        });
+        
+        function checkProvider() {
+            statusDiv.textContent = 'Provider Check:';
+            console.log('Checking window.ethereum:', window.ethereum);
+            log('window.ethereum exists: ' + (typeof window.ethereum !== 'undefined'));
+            
+            if (window.ethereum) {
+                log('window.ethereum.isMetaMask: ' + window.ethereum.isMetaMask);
+                log('window.ethereum.isConnected(): ' + window.ethereum.isConnected());
+                log('window.ethereum.chainId: ' + window.ethereum.chainId);
+                log('window.ethereum.networkVersion: ' + window.ethereum.networkVersion);
+                log('Methods: ' + Object.getOwnPropertyNames(Object.getPrototypeOf(window.ethereum)).join(', '));
+            } else {
+                // Check if it exists after a delay
+                setTimeout(() => {
+                    if (window.ethereum) {
+                        log('Provider appeared after delay!');
+                        checkProvider();
+                    }
+                }, 500);
+            }
+        }
+        
+        async function requestAccounts() {
+            statusDiv.textContent = 'Requesting accounts...';
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                log('Accounts: ' + JSON.stringify(accounts));
+            } catch (error) {
+                log('Error: ' + error.message);
+            }
+        }
+        
+        async function getAccounts() {
+            statusDiv.textContent = 'Getting accounts...';
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                log('Accounts: ' + JSON.stringify(accounts));
+            } catch (error) {
+                log('Error: ' + error.message);
+            }
+        }
+        
+        async function getChainId() {
+            statusDiv.textContent = 'Getting chain ID...';
+            try {
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                log('Chain ID: ' + chainId + ' (decimal: ' + parseInt(chainId, 16) + ')');
+            } catch (error) {
+                log('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Everything Black Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #050505;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #0A0A0A;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #C44901;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #999;
+            font-size: 16px;
+        }
+
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .notification {
+            background: #161616;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification:hover {
+            background: #1A1A1A;
+            border-color: #C44901;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(196, 73, 1, 0.2);
+        }
+
+        .notification.high-priority {
+            border-left: 4px solid #C44901;
+        }
+
+        .notification.unread::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            background: #C44901;
+            border-radius: 50%;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .notification-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .notification-date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .notification-message {
+            font-size: 16px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .notification-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #C44901;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .notification-link:hover {
+            color: #F78513;
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .error-state {
+            background: #1A0000;
+            border: 1px solid #DC3545;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #DC3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading i {
+            font-size: 32px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bell"></i> Notifications</h1>
+            <p>Stay updated with the latest news and updates from Everything Black</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Loading notifications...</p>
+        </div>
+
+        <div id="notifications-container" class="notifications-list" style="display: none;">
+            <!-- Notifications will be loaded here -->
+        </div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-bell-slash"></i>
+            <h2>No notifications</h2>
+            <p>You're all caught up!</p>
+        </div>
+
+        <div id="error-state" class="error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h2>Error loading notifications</h2>
+            <p>Please check your internet connection and try again.</p>
+        </div>
+    </div>
+
+    <script>
+        // Fetch notifications from GitHub
+        async function loadNotifications() {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('notifications-container');
+            const emptyState = document.getElementById('empty-state');
+            const errorState = document.getElementById('error-state');
+
+            try {
+                // Try to fetch from public releases repo first, fallback to local
+                let response;
+                try {
+                    response = await fetch('https://raw.githubusercontent.com/webdeeva/eb-browser-releases/master/notifications.json');
+                } catch (e) {
+                    // Fallback to local file for development
+                    response = await fetch('./notifications.json');
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch notifications');
+                }
+
+                const data = await response.json();
+                const notifications = data.notifications || [];
+
+                loading.style.display = 'none';
+
+                if (notifications.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                // Sort by date (newest first)
+                notifications.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // Get read notifications from localStorage
+                const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                
+                // Render notifications
+                container.innerHTML = notifications.map(notification => {
+                    const isUnread = !notification.read && !readNotifications.includes(notification.id);
+                    const isPriority = notification.priority === 'high';
+                    
+                    return `
+                        <div class="notification ${isPriority ? 'high-priority' : ''} ${isUnread ? 'unread' : ''}" data-id="${notification.id}">
+                            <div class="notification-header">
+                                <div>
+                                    <div class="notification-title">${notification.title}</div>
+                                    <div class="notification-date">${formatDate(notification.date)}</div>
+                                </div>
+                            </div>
+                            <div class="notification-message">${notification.message}</div>
+                            ${notification.link ? `<a href="${notification.link}" class="notification-link" target="_blank">Learn more <i class="fas fa-external-link-alt"></i></a>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                container.style.display = 'block';
+
+                // Add click handlers
+                document.querySelectorAll('.notification').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('notification-link')) {
+                            el.classList.remove('unread');
+                            
+                            // Save read state to localStorage
+                            const notificationId = el.getAttribute('data-id');
+                            const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                            if (!readNotifications.includes(notificationId)) {
+                                readNotifications.push(notificationId);
+                                localStorage.setItem('readNotifications', JSON.stringify(readNotifications));
+                            }
+                            
+                            // Check if all notifications are now read
+                            const allRead = document.querySelectorAll('.notification.unread').length === 0;
+                            if (allRead) {
+                                localStorage.setItem('hasUnreadNotifications', 'false');
+                                // If in Electron, update the parent window
+                                if (window.parent !== window) {
+                                    window.parent.postMessage({ type: 'notificationsRead' }, '*');
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Apply read states from localStorage
+                const savedReadNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                savedReadNotifications.forEach(id => {
+                    const el = document.querySelector(`[data-id="${id}"]`);
+                    if (el) {
+                        el.classList.remove('unread');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                loading.style.display = 'none';
+                errorState.style.display = 'block';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (days === 0) return 'Today';
+            if (days === 1) return 'Yesterday';
+            if (days < 7) return `${days} days ago`;
+            
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+
+        // Load notifications when page loads
+        loadNotifications();
+
+        // For local testing, you can use this instead:
+        async function loadLocalNotifications() {
+            try {
+                const response = await fetch('./notifications.json');
+                const data = await response.json();
+                // ... rest of the code
+            } catch (error) {
+                console.error('Error loading local notifications:', error);
+            }
+        }
+    </script>
+</body>
+</html>

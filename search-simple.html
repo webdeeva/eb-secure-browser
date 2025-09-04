@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Search - Everything Black</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .search-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #c44901;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .result-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .result-title {
+            font-size: 18px;
+            color: #1a0dab;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .result-description {
+            color: #545454;
+            margin: 5px 0;
+        }
+        .result-location {
+            color: #006621;
+            font-size: 14px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            padding: 15px;
+            color: #c00;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Everything Black - Search</h1>
+    
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search for Black-owned businesses...">
+        <button onclick="performSearch()" class="search-button">Search</button>
+    </div>
+    
+    <div id="results" class="results"></div>
+
+    <script>
+        // Get query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialQuery = urlParams.get('q') || '';
+        
+        // Set initial query
+        document.getElementById('searchInput').value = initialQuery;
+        
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+            
+            try {
+                // Use debug endpoint since it works
+                const response = await fetch(`https://eb2new-backend-48935.ondigitalocean.app/api/v1/debug/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                console.log('Search response:', data);
+                
+                if (data.success && data.results && data.results.length > 0) {
+                    let html = `<h2>Found ${data.results_found} result(s) for "${query}"</h2>`;
+                    
+                    data.results.forEach(result => {
+                        html += `
+                            <div class="result-item">
+                                <a href="${result.website_url || '#'}" class="result-title">${result.name}</a>
+                                <div class="result-description">${result.description || 'No description available'}</div>
+                                <div class="result-location">${result.city}, ${result.state_province}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            No results found for "${query}". 
+                            The database currently has limited data. 
+                            Try searching for "She Interactive" or "Melanated AI".
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        Error performing search: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Perform search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // Auto-search if query exists
+        if (initialQuery) {
+            performSearch();
+        }
+    </script>
+</body>
+</html>

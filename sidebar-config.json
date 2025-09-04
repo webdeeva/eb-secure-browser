@@ -1,0 +1,109 @@
+{
+  "buttons": [
+    {
+      "id": "bookmarks",
+      "enabled": true,
+      "text": "Bookmarks",
+      "icon": "far fa-bookmark",
+      "action": "panel",
+      "panel": "bookmarks-panel"
+    },
+    {
+      "id": "history",
+      "enabled": true,
+      "text": "History",
+      "icon": "fas fa-history",
+      "action": "panel",
+      "panel": "history-panel"
+    },
+    {
+      "id": "web3",
+      "enabled": true,
+      "text": "Web3",
+      "icon": "fas fa-cube",
+      "action": "panel",
+      "panel": "web3-panel"
+    },
+    {
+      "id": "notifications",
+      "enabled": true,
+      "text": "Notifications",
+      "icon": "fas fa-bell",
+      "action": "url",
+      "url": "notifications.html",
+      "hasNotificationDot": true
+    },
+    {
+      "id": "chatbot",
+      "enabled": true,
+      "text": "AI Assistant",
+      "icon": "fas fa-robot",
+      "action": "url",
+      "url": "https://chat.everythingblack.xyz"
+    },
+    {
+      "id": "tv",
+      "enabled": true,
+      "text": "EB TV",
+      "icon": "fas fa-tv",
+      "action": "url",
+      "url": "https://www.everythingblack.tv"
+    },
+    {
+      "id": "domains",
+      "enabled": true,
+      "text": "EB Domains",
+      "icon": "fas fa-globe",
+      "action": "url",
+      "url": "https://domains.everythingblack.xyz"
+    },
+    {
+      "id": "ebpass",
+      "enabled": true,
+      "text": "EB Pass",
+      "icon": "fas fa-coins",
+      "action": "url",
+      "url": "https://pass.everythingblack.xyz"
+    },
+    {
+      "id": "resources",
+      "enabled": false,
+      "text": "Resources",
+      "icon": "fas fa-hand-holding",
+      "action": "url",
+      "url": "https://resources.everythingblack.xyz"
+    },
+    {
+      "id": "settings",
+      "enabled": true,
+      "text": "Settings",
+      "icon": "fas fa-cog",
+      "action": "settings",
+      "panel": "settings-panel"
+    }
+  ],
+  "maintenanceMode": {
+    "message": "This feature is currently down for maintenance.",
+    "subMessage": "Please check back later or visit our forum for updates.",
+    "forumUrl": "https://www.everythingblack.com/forum",
+    "forumText": "Visit EB Forum"
+  },
+  "customButtons": [
+    {
+      "id": "shop",
+      "enabled": false,
+      "text": "EB Shop",
+      "icon": "fas fa-shopping-cart",
+      "action": "url",
+      "url": "https://shop.everythingblack.xyz"
+    },
+    {
+      "id": "vr",
+      "enabled": false,
+      "text": "EB VR",
+      "icon": "fas fa-vr-cardboard",
+      "action": "url",
+      "url": "https://vr.everythingblack.xyz"
+    }
+  ]
+}

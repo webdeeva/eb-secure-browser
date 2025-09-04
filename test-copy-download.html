@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Copy/Download</title>
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #ff6b1a;
+        }
+        .log {
+            background: #222;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Copy/Download Functionality</h1>
+    
+    <div>
+        <h2>Environment Check</h2>
+        <div id="env-check" class="log"></div>
+    </div>
+    
+    <div>
+        <h2>Copy Test</h2>
+        <button onclick="testCopyElectron()">Test Electron Copy</button>
+        <button onclick="testCopyBrowser()">Test Browser Copy</button>
+        <button onclick="testCopyFallback()">Test Fallback Copy</button>
+    </div>
+    
+    <div>
+        <h2>Download Test</h2>
+        <button onclick="testDownloadElectron()">Test Electron Download</button>
+        <button onclick="testDownloadBrowser()">Test Browser Download</button>
+    </div>
+    
+    <div>
+        <h2>Log Output</h2>
+        <div id="log" class="log"></div>
+    </div>
+    
+    <script>
+        const log = document.getElementById('log');
+        const envCheck = document.getElementById('env-check');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        // Environment check
+        envCheck.textContent = `
+Environment Check:
+- window.electronAPI: ${typeof window.electronAPI !== 'undefined' ? '✓ Available' : '✗ Not Available'}
+- navigator.clipboard: ${typeof navigator.clipboard !== 'undefined' ? '✓ Available' : '✗ Not Available'}
+- require: ${typeof require !== 'undefined' ? '✓ Available' : '✗ Not Available'}
+- window.electronAPI methods: ${window.electronAPI ? Object.keys(window.electronAPI).join(', ') : 'N/A'}
+        `.trim();
+        
+        // Copy tests
+        async function testCopyElectron() {
+            addLog('Testing Electron copy...');
+            if (window.electronAPI && window.electronAPI.copyToClipboard) {
+                try {
+                    const result = await window.electronAPI.copyToClipboard('Test from Electron API');
+                    addLog(`Electron copy result: ${JSON.stringify(result)}`);
+                } catch (e) {
+                    addLog(`Electron copy error: ${e.message}`);
+                }
+            } else {
+                addLog('Electron API not available');
+            }
+        }
+        
+        async function testCopyBrowser() {
+            addLog('Testing browser clipboard API...');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText('Test from browser API');
+                    addLog('Browser copy successful');
+                } catch (e) {
+                    addLog(`Browser copy error: ${e.message}`);
+                }
+            } else {
+                addLog('Browser clipboard API not available');
+            }
+        }
+        
+        function testCopyFallback() {
+            addLog('Testing fallback copy...');
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = 'Test from fallback';
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                addLog(`Fallback copy ${success ? 'successful' : 'failed'}`);
+            } catch (e) {
+                addLog(`Fallback copy error: ${e.message}`);
+            }
+        }
+        
+        // Download tests
+        async function testDownloadElectron() {
+            addLog('Testing Electron download...');
+            if (window.electronAPI && window.electronAPI.downloadFile) {
+                try {
+                    const result = await window.electronAPI.downloadFile('Test content from Electron', 'test-electron.txt');
+                    addLog(`Electron download result: ${JSON.stringify(result)}`);
+                } catch (e) {
+                    addLog(`Electron download error: ${e.message}`);
+                }
+            } else {
+                addLog('Electron API not available');
+            }
+        }
+        
+        function testDownloadBrowser() {
+            addLog('Testing browser download...');
+            try {
+                const blob = new Blob(['Test content from browser'], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'test-browser.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                addLog('Browser download triggered');
+            } catch (e) {
+                addLog(`Browser download error: ${e.message}`);
+            }
+        }
+        
+        // Manual API creation if needed
+        if (typeof window.electronAPI === 'undefined' && typeof require !== 'undefined') {
+            addLog('Attempting to create electronAPI manually...');
+            try {
+                const { ipcRenderer } = require('electron');
+                window.electronAPI = {
+                    copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
+                    downloadFile: (content, filename) => ipcRenderer.invoke('download-file', { content, filename })
+                };
+                addLog('✓ electronAPI created successfully');
+                // Update environment check
+                envCheck.textContent += '\n\n✓ electronAPI created manually';
+            } catch (e) {
+                addLog(`✗ Failed to create electronAPI: ${e.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

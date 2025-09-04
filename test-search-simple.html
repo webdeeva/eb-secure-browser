@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Search Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #c44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .results {
+            background: #f5f5f5;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Search Test</h1>
+    
+    <input type="text" id="query" value="web development" style="width: 300px; padding: 8px;">
+    
+    <br><br>
+    
+    <button onclick="testDirectFetch()">Test Direct Fetch</button>
+    <button onclick="testSearchFallback()">Test SearchFallback</button>
+    <button onclick="testSearchFallbackElectron()">Test SearchFallbackElectron</button>
+    
+    <div id="results" class="results" style="display:none;"></div>
+
+    <script>
+        const API_BASE = 'https://eb2new-backend-48935.ondigitalocean.app';
+        
+        function showResult(message, isError = false) {
+            const resultsEl = document.getElementById('results');
+            resultsEl.style.display = 'block';
+            resultsEl.className = isError ? 'results error' : 'results success';
+            resultsEl.textContent = message;
+        }
+        
+        async function testDirectFetch() {
+            try {
+                const query = document.getElementById('query').value;
+                showResult('Testing direct fetch...');
+                
+                // Test health first
+                const healthResponse = await fetch(`${API_BASE}/api/v1/health`);
+                const healthData = await healthResponse.json();
+                console.log('Health check:', healthData);
+                
+                // Test search
+                const searchResponse = await fetch(`${API_BASE}/api/v1/search?q=${encodeURIComponent(query)}&limit=5`);
+                const searchData = await searchResponse.json();
+                console.log('Search response:', searchData);
+                
+                // Test debug search
+                const debugResponse = await fetch(`${API_BASE}/api/v1/debug/search?q=${encodeURIComponent(query)}`);
+                const debugData = await debugResponse.json();
+                console.log('Debug search response:', debugData);
+                
+                showResult(`Health: ${JSON.stringify(healthData)}\n\nMain Search: ${JSON.stringify(searchData, null, 2)}\n\nDebug Search: ${JSON.stringify(debugData, null, 2)}`);
+            } catch (error) {
+                console.error('Direct fetch error:', error);
+                showResult(`Error: ${error.message}\n\nCheck browser console for CORS errors.`, true);
+            }
+        }
+        
+        async function testSearchFallback() {
+            try {
+                const query = document.getElementById('query').value;
+                showResult('Loading searchFallback.js...');
+                
+                // Load the script dynamically
+                const script = document.createElement('script');
+                script.src = 'searchFallback.js';
+                script.onload = async () => {
+                    const searchFallback = new SearchFallback();
+                    console.log('SearchFallback loaded');
+                    
+                    const results = await searchFallback.search(query);
+                    console.log('SearchFallback results:', results);
+                    showResult(JSON.stringify(results, null, 2));
+                };
+                script.onerror = () => {
+                    showResult('Failed to load searchFallback.js', true);
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('SearchFallback error:', error);
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+        
+        async function testSearchFallbackElectron() {
+            try {
+                const query = document.getElementById('query').value;
+                showResult('Loading searchFallbackElectron.js...');
+                
+                // Load the script dynamically
+                const script = document.createElement('script');
+                script.src = 'searchFallbackElectron.js';
+                script.onload = async () => {
+                    const searchFallback = new SearchFallbackElectron();
+                    console.log('SearchFallbackElectron loaded');
+                    
+                    const results = await searchFallback.search(query);
+                    console.log('SearchFallbackElectron results:', results);
+                    showResult(JSON.stringify(results, null, 2));
+                };
+                script.onerror = () => {
+                    showResult('Failed to load searchFallbackElectron.js', true);
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('SearchFallbackElectron error:', error);
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

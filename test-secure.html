@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secure EB Browser Test</title>
+    <style>
+        body {
+            background: #050505;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-section {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        
+        h1 {
+            color: #e55400;
+        }
+        
+        h2 {
+            color: #ff8c00;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: #e55400;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #ff6600;
+        }
+        
+        .result {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            min-height: 30px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .success {
+            border-left: 4px solid #00ff00;
+        }
+        
+        .error {
+            border-left: 4px solid #ff0000;
+        }
+        
+        .warning {
+            border-left: 4px solid #ffaa00;
+        }
+        
+        .security-test {
+            background: #2a0a0a;
+            border: 2px solid #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔒 Secure EB Browser Test Page</h1>
+    <p>This page tests the secure implementation. All dangerous operations should be blocked.</p>
+
+    <!-- Security Tests -->
+    <div class="test-section security-test">
+        <h2>🚨 Security Tests (Should ALL Fail)</h2>
+        <p>These tests verify that dangerous operations are blocked:</p>
+        
+        <button onclick="testNodeAccess()">Test Node.js Access (Should Fail)</button>
+        <div id="node-result" class="result"></div>
+        
+        <button onclick="testFileSystem()">Test File System Access (Should Fail)</button>
+        <div id="fs-result" class="result"></div>
+        
+        <button onclick="testProcess()">Test Process Access (Should Fail)</button>
+        <div id="process-result" class="result"></div>
+        
+        <button onclick="testRequire()">Test Require Function (Should Fail)</button>
+        <div id="require-result" class="result"></div>
+    </div>
+
+    <!-- Safe API Tests -->
+    <div class="test-section">
+        <h2>✅ Safe API Tests (Should Work)</h2>
+        <p>These tests verify the secure APIs work correctly:</p>
+        
+        <button onclick="testWalletAddress()">Get Wallet Address</button>
+        <div id="wallet-address" class="result"></div>
+        
+        <button onclick="testWalletBalance()">Get Wallet Balance</button>
+        <div id="wallet-balance" class="result"></div>
+        
+        <button onclick="testNavigation()">Test Navigation API</button>
+        <div id="navigation-result" class="result"></div>
+        
+        <button onclick="testBookmark()">Test Bookmark API</button>
+        <div id="bookmark-result" class="result"></div>
+        
+        <button onclick="testEBDomain()">Test EB Domain Resolution</button>
+        <div id="domain-result" class="result"></div>
+    </div>
+
+    <!-- Transaction Test -->
+    <div class="test-section">
+        <h2>💰 Transaction Test (Requires Confirmation)</h2>
+        <p>This will show a confirmation dialog before proceeding:</p>
+        
+        <button onclick="testTransaction()">Test Send Transaction</button>
+        <div id="tx-result" class="result"></div>
+    </div>
+
+    <!-- Ethereum Provider Test -->
+    <div class="test-section">
+        <h2>🌐 Web3 Provider Test</h2>
+        <p>Test the secure Ethereum provider:</p>
+        
+        <button onclick="testEthereumProvider()">Test Ethereum Provider</button>
+        <div id="eth-result" class="result"></div>
+    </div>
+
+    <script>
+        // Helper function to display results
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result ' + type;
+        }
+
+        // SECURITY TESTS - These should all fail in secure mode
+        
+        function testNodeAccess() {
+            try {
+                // Try to access Node.js global
+                if (typeof global !== 'undefined') {
+                    showResult('node-result', '❌ SECURITY FAILURE: Node.js global is accessible!', 'error');
+                } else {
+                    showResult('node-result', '✅ SECURE: Node.js global is blocked', 'success');
+                }
+            } catch (e) {
+                showResult('node-result', '✅ SECURE: Node.js access blocked - ' + e.message, 'success');
+            }
+        }
+
+        function testFileSystem() {
+            try {
+                // Try to require fs module
+                const fs = require('fs');
+                showResult('fs-result', '❌ SECURITY FAILURE: File system is accessible!', 'error');
+            } catch (e) {
+                showResult('fs-result', '✅ SECURE: File system access blocked - ' + e.message, 'success');
+            }
+        }
+
+        function testProcess() {
+            try {
+                // Try to access process object
+                if (typeof process !== 'undefined' && process.env) {
+                    showResult('process-result', '❌ SECURITY FAILURE: Process object is accessible!', 'error');
+                } else {
+                    showResult('process-result', '✅ SECURE: Process object is blocked', 'success');
+                }
+            } catch (e) {
+                showResult('process-result', '✅ SECURE: Process access blocked - ' + e.message, 'success');
+            }
+        }
+
+        function testRequire() {
+            try {
+                // Try to use require function
+                if (typeof require === 'function') {
+                    showResult('require-result', '❌ SECURITY FAILURE: Require function is accessible!', 'error');
+                } else {
+                    showResult('require-result', '✅ SECURE: Require function is blocked', 'success');
+                }
+            } catch (e) {
+                showResult('require-result', '✅ SECURE: Require blocked - ' + e.message, 'success');
+            }
+        }
+
+        // SAFE API TESTS - These should work through the secure bridge
+        
+        async function testWalletAddress() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('wallet-address', '⚠️ ebAPI not available. Is secure preload loaded?', 'warning');
+                    return;
+                }
+                
+                const address = await ebAPI.wallet.getAddress();
+                showResult('wallet-address', 'Wallet Address: ' + (address || 'No wallet'), 'success');
+            } catch (e) {
+                showResult('wallet-address', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testWalletBalance() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('wallet-balance', '⚠️ ebAPI not available. Is secure preload loaded?', 'warning');
+                    return;
+                }
+                
+                const balance = await ebAPI.wallet.getBalance();
+                showResult('wallet-balance', 'Balance: ' + (balance || '0'), 'success');
+            } catch (e) {
+                showResult('wallet-balance', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testNavigation() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('navigation-result', '⚠️ ebAPI not available', 'warning');
+                    return;
+                }
+                
+                showResult('navigation-result', 'Navigation API available. Functions: ' + 
+                    Object.keys(ebAPI.navigation || {}).join(', '), 'success');
+            } catch (e) {
+                showResult('navigation-result', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testBookmark() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('bookmark-result', '⚠️ ebAPI not available', 'warning');
+                    return;
+                }
+                
+                // Test adding a bookmark
+                await ebAPI.bookmarks.add('https://example.com', 'Test Bookmark');
+                showResult('bookmark-result', 'Bookmark added successfully!', 'success');
+            } catch (e) {
+                showResult('bookmark-result', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testEBDomain() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('domain-result', '⚠️ ebAPI not available', 'warning');
+                    return;
+                }
+                
+                const isEB = await ebAPI.domains.isEBDomain('test.guap');
+                showResult('domain-result', 'test.guap is EB domain: ' + isEB, 'success');
+            } catch (e) {
+                showResult('domain-result', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        async function testTransaction() {
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    showResult('tx-result', '⚠️ ebAPI not available', 'warning');
+                    return;
+                }
+                
+                showResult('tx-result', 'Requesting transaction (check for confirmation dialog)...', 'warning');
+                
+                const result = await ebAPI.wallet.sendTransaction({
+                    to: '0x0000000000000000000000000000000000000000',
+                    value: '1000000000000000', // 0.001 ETH
+                    data: '0x'
+                });
+                
+                showResult('tx-result', 'Transaction approved: ' + result, 'success');
+            } catch (e) {
+                showResult('tx-result', 'Transaction rejected or error: ' + e.message, 'error');
+            }
+        }
+
+        async function testEthereumProvider() {
+            try {
+                if (typeof ethereum === 'undefined') {
+                    showResult('eth-result', '⚠️ Ethereum provider not available', 'warning');
+                    return;
+                }
+                
+                // Test safe method
+                const accounts = await ethereum.request({ method: 'eth_accounts' });
+                showResult('eth-result', 'Ethereum provider working. Accounts: ' + 
+                    (accounts.length > 0 ? accounts.join(', ') : 'No accounts'), 'success');
+            } catch (e) {
+                showResult('eth-result', 'Error: ' + e.message, 'error');
+            }
+        }
+
+        // Run security tests on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🔒 Secure Test Page Loaded');
+            console.log('APIs available:', {
+                ebAPI: typeof ebAPI !== 'undefined',
+                ethereum: typeof ethereum !== 'undefined',
+                require: typeof require !== 'undefined',
+                process: typeof process !== 'undefined'
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Viewport Test</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            min-height: 100vh;
+            overflow: auto;
+            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ffff00);
+        }
+        .test-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .test-box {
+            background: rgba(0,0,0,0.8);
+            padding: 40px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-box">
+            <h1>Viewport Fix Test</h1>
+            <p>If you can see this entire box without scrolling, the viewport fix is working!</p>
+            <p>Window dimensions: <span id="dimensions"></span></p>
+        </div>
+        <div class="test-box">
+            <h2>Bottom Test Box</h2>
+            <p>This box should be visible at the bottom of the viewport</p>
+            <p>If this is cut off, the viewport fix needs more work</p>
+        </div>
+    </div>
+    
+    <script>
+        function updateDimensions() {
+            document.getElementById('dimensions').textContent = 
+                window.innerWidth + 'x' + window.innerHeight;
+        }
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+    </script>
+</body>
+</html>

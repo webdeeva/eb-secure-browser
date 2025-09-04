@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Everything Black Browser</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="browser-container">
+        <div class="titlebar">
+            <div class="titlebar-text">Everything Black Browser</div>
+            <div class="titlebar-controls">
+                <button class="titlebar-button" id="minimize-button"><i class="fas fa-minus"></i></button>
+                <button class="titlebar-button" id="maximize-button"><i class="fas fa-square"></i></button>
+                <button class="titlebar-button" id="close-button"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="toolbar">
+            <div class="navigation-controls">
+                <button id="back-button"><i class="fas fa-chevron-left"></i></button>
+                <button id="forward-button"><i class="fas fa-chevron-right"></i></button>
+                <button id="refresh-button"><i class="fas fa-sync"></i></button>
+                <button id="home-button" title="Go to Home"><i class="fas fa-home"></i></button>
+                <div class="url-container">
+                    <span id="url-lock" class="url-lock"><i class="fas fa-lock"></i></span>
+                    <input type="text" id="url-bar" placeholder="Enter URL">
+                </div>
+                <button id="go-button"><i class="fas fa-arrow-right"></i></button>
+                <button id="bookmark-button"><i class="far fa-star"></i></button>
+                <button id="devtools-button"><i class="fas fa-tools"></i></button>
+            </div>
+            <div class="bookmark-dropdown" id="bookmark-dropdown">
+                <div class="bookmark-dropdown-header">
+                    <input type="text" id="bookmark-name" placeholder="Name">
+                    <select id="bookmark-folder">
+                        <option value="favorites-bar">Favorites Bar</option>
+                        <option value="tech">Tech</option>
+                        <option value="government">Government</option>
+                        <option value="business">Business</option>
+                        <option value="social">Social</option>
+                        <option value="lifestyle">Lifestyle</option>
+                        <option value="family">Family</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="health">Health</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <button id="add-bookmark-btn">Add</button>
+                </div>
+            </div>
+            <div class="favorites-bar" id="favorites-bar">
+                <!-- Favorites will be dynamically added here -->
+            </div>
+            <div class="tab-controls">
+                <div id="tabs-container">
+                    <button id="new-tab-button"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="main-container">
+            <div class="sidebar collapsed">
+                <button id="sidebar-toggle" class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button id="toggle-bookmarks" class="sidebar-button">
+                    <span class="icon"><i class="far fa-bookmark"></i></span>
+                    <span class="text">Bookmarks</span>
+                </button>
+                <div id="bookmarks-panel" class="panel"></div>
+                
+                <button id="toggle-history" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-history"></i></span>
+                    <span class="text">History</span>
+                </button>
+                <div id="history-panel" class="panel"></div>
+                
+                <button id="toggle-web3" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-cube"></i></span>
+                    <span class="text">Web3</span>
+                </button>
+                <div id="web3-panel" class="panel">
+                    <div class="web3-controls">
+                        <!-- GuapcoinX Logo -->
+                        <div class="guapcoinx-logo">
+                            <img src="assets/guapxlogo.png" alt="GuapcoinX">
+                        </div>
+                        
+                        <!-- Password Lock Screen -->
+                        <div id="wallet-locked-section" style="display: none;">
+                            <div class="lock-screen">
+                                <i class="fas fa-lock lock-icon"></i>
+                                <h3>Wallet Locked</h3>
+                                <p>Enter your password to unlock</p>
+                                <input type="password" id="unlock-password" placeholder="Enter password">
+                                <button id="unlock-wallet-btn" class="wallet-btn">Unlock Wallet</button>
+                                <div id="unlock-error" class="error-message"></div>
+                                <div class="profile-import-section">
+                                    <p>Lost your password?</p>
+                                    <button id="import-profile-login-btn" class="wallet-btn">Import Profile</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password Setup Screen -->
+                        <div id="password-setup-section" style="display: none;">
+                            <div class="password-setup">
+                                <h3>Set Up Wallet Password</h3>
+                                <p>Create a strong password to protect your wallet</p>
+                                <div class="password-requirements">
+                                    <p>Password must contain:</p>
+                                    <ul>
+                                        <li id="req-length"><i class="fas fa-times"></i> At least 8 characters</li>
+                                        <li id="req-uppercase"><i class="fas fa-times"></i> One uppercase letter</li>
+                                        <li id="req-lowercase"><i class="fas fa-times"></i> One lowercase letter</li>
+                                        <li id="req-number"><i class="fas fa-times"></i> One number</li>
+                                        <li id="req-special"><i class="fas fa-times"></i> One special character</li>
+                                    </ul>
+                                </div>
+                                <input type="password" id="setup-password" placeholder="Enter password">
+                                <input type="password" id="confirm-password" placeholder="Confirm password">
+                                <button id="set-password-btn" class="wallet-btn">Set Password</button>
+                                <div class="profile-import-section">
+                                    <p>Or import existing profile:</p>
+                                    <button id="import-profile-btn" class="wallet-btn">Import Profile</button>
+                                </div>
+                                <div id="setup-error" class="error-message"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="wallet-section" style="display: none;">
+                            <div id="no-wallet-section">
+                                <button id="create-wallet" class="wallet-btn">Create New Wallet</button>
+                                <button id="import-wallet" class="wallet-btn">Import Wallet</button>
+                            </div>
+                            
+                            <div id="wallet-info" style="display: none;">
+                                <div class="wallet-address">
+                                    <strong>Address:</strong>
+                                    <span id="wallet-address"></span>
+                                    <button id="copy-address" class="copy-btn" title="Copy Address">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="wallet-balance">
+                                    <strong>Balance:</strong>
+                                    <span id="wallet-balance">0.0000 GUAP</span>
+                                    <button id="refresh-balance" class="refresh-btn" title="Refresh Balance">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Token Section -->
+                                <div class="token-section">
+                                    <div class="token-header">
+                                        <h4>Tokens</h4>
+                                    </div>
+                                    <button id="import-token-btn" class="wallet-btn">
+                                        <i class="fas fa-plus"></i> Import Token
+                                    </button>
+                                    <div id="token-list" class="token-list">
+                                        <!-- Tokens will be displayed here -->
+                                    </div>
+                                </div>
+                                <button id="view-transactions" class="wallet-btn">
+                                    <i class="fas fa-history"></i> Transaction History
+                                </button>
+                                <button id="show-mnemonic" class="wallet-btn">Show Recovery Phrase</button>
+                                <button id="lock-wallet-btn" class="wallet-btn">Lock Wallet</button>
+                                <button id="change-password-btn" class="wallet-btn">Change Password</button>
+                                <button id="export-profile-btn" class="wallet-btn">Export Profile</button>
+                                <button id="delete-profile-btn" class="wallet-btn danger">Delete Profile</button>
+                                <button id="disconnect-wallet" class="wallet-btn danger">Disconnect Wallet</button>
+                            </div>
+                            
+                            <div id="mnemonic-modal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <h3>Recovery Phrase</h3>
+                                    <p class="warning">⚠️ Keep this phrase secure! Anyone with these words can access your wallet.</p>
+                                    <div id="mnemonic-phrase" class="mnemonic-display"></div>
+                                    <button id="copy-mnemonic" class="wallet-btn">Copy to Clipboard</button>
+                                    <button id="close-mnemonic" class="wallet-btn">Close</button>
+                                </div>
+                            </div>
+                            
+                            <div id="import-modal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <h3>Import Wallet</h3>
+                                    <p>Enter your 12-word recovery phrase:</p>
+                                    <textarea id="import-mnemonic" rows="3" placeholder="Enter your recovery phrase..."></textarea>
+                                    <button id="confirm-import" class="wallet-btn">Import</button>
+                                    <button id="cancel-import" class="wallet-btn">Cancel</button>
+                                </div>
+                            </div>
+                            
+                            <div id="import-token-modal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <h3>Import Token</h3>
+                                    <p>Enter the token contract address:</p>
+                                    <input type="text" id="token-contract-address" placeholder="0x..." style="width: 100%; padding: 8px; margin: 10px 0;">
+                                    <div id="token-import-error" class="error-message" style="display: none;"></div>
+                                    <div id="token-import-loading" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading token information...
+                                    </div>
+                                    <div id="token-info-preview" style="display: none; margin: 10px 0;">
+                                        <p><strong>Name:</strong> <span id="token-preview-name"></span></p>
+                                        <p><strong>Symbol:</strong> <span id="token-preview-symbol"></span></p>
+                                        <p><strong>Decimals:</strong> <span id="token-preview-decimals"></span></p>
+                                    </div>
+                                    <button id="confirm-import-token" class="wallet-btn" disabled>Import Token</button>
+                                    <button id="cancel-import-token" class="wallet-btn">Cancel</button>
+                                </div>
+                            </div>
+                            
+                            <div id="change-password-modal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <h3>Change Password</h3>
+                                    <input type="password" id="current-password" placeholder="Current password">
+                                    <input type="password" id="new-password" placeholder="New password">
+                                    <input type="password" id="confirm-new-password" placeholder="Confirm new password">
+                                    <button id="confirm-change-password" class="wallet-btn">Change Password</button>
+                                    <button id="cancel-change-password" class="wallet-btn">Cancel</button>
+                                    <div id="change-password-error" class="error-message"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Transaction Approval Modal -->
+                            <div id="tx-approval-modal" class="modal" style="display: none;">
+                                <div class="modal-content transaction-approval">
+                                    <div class="modal-header">
+                                        <img src="assets/ebblack.png" alt="EB" class="modal-logo">
+                                        <h3>Transaction Approval</h3>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="tx-details">
+                                            <div class="tx-site">
+                                                <label>Site:</label>
+                                                <span id="tx-site-domain"></span>
+                                            </div>
+                                            <div class="tx-from">
+                                                <label>From:</label>
+                                                <span id="tx-from-address"></span>
+                                            </div>
+                                            <div class="tx-to">
+                                                <label>To:</label>
+                                                <span id="tx-to-address"></span>
+                                            </div>
+                                            <div class="tx-value">
+                                                <label>Value:</label>
+                                                <span id="tx-value-amount"></span> GUAP
+                                            </div>
+                                            <div class="tx-gas" id="tx-gas-section" style="display: none;">
+                                                <label>Gas Fee:</label>
+                                                <span id="tx-gas-fee"></span> GUAP
+                                            </div>
+                                            <div class="tx-data" id="tx-data-section" style="display: none;">
+                                                <label>Data:</label>
+                                                <textarea id="tx-data-content" readonly></textarea>
+                                            </div>
+                                            <div class="tx-total">
+                                                <label><strong>Total:</strong></label>
+                                                <span id="tx-total-amount"></span> GUAP
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button id="tx-approve" class="wallet-btn approve-btn">Approve</button>
+                                        <button id="tx-reject" class="wallet-btn reject-btn">Reject</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="network-settings">
+                            <h3>GuapcoinX Network</h3>
+                            <div class="network-info">
+                                <div><strong>RPC:</strong> https://rpc-mainnet-2.guapcoinx.com</div>
+                                <div><strong>Chain ID:</strong> 71111</div>
+                                <div><strong>Explorer:</strong> https://explorer.guapcoinx.com</div>
+                            </div>
+                            <button id="connect-network">Connect to GuapcoinX</button>
+                        </div>
+                        
+                        <div id="transaction-section" style="display: none;">
+                            <h3>Send Transaction</h3>
+                            <div class="send-to-container">
+                                <input type="text" id="send-to" placeholder="Address or domain (e.g. aquarius.guap)">
+                                <div id="domain-resolution-status" class="domain-status"></div>
+                                <div id="resolved-address" class="resolved-address" style="display: none;">
+                                    <small>Resolved to: <span id="resolved-address-text"></span></small>
+                                </div>
+                            </div>
+                            <input type="number" id="send-amount" placeholder="Amount (GUAP)" step="0.0001">
+                            <button id="send-transaction" class="wallet-btn">Send</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="toggle-notifications" class="sidebar-button">
+                    <span class="icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot" id="notification-dot" style="display: none;"></span>
+                    </span>
+                    <span class="text">Notifications</span>
+                </button>
+                
+                <button id="toggle-chatbot" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-robot"></i></span>
+                    <span class="text">AI Assistant</span>
+                </button>
+                
+                <button id="toggle-tv" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-tv"></i></span>
+                    <span class="text">EB TV</span>
+                </button>
+                
+                <button id="toggle-domains" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-globe"></i></span>
+                    <span class="text">EB Domains</span>
+                </button>
+                
+                <button id="toggle-resources" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-hand-holding"></i></span>
+                    <span class="text">Resources</span>
+                </button>
+                
+                <button id="toggle-settings" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-cog"></i></span>
+                    <span class="text">Settings</span>
+                </button>
+                <div id="settings-panel" class="panel">
+                    <div class="settings-content">
+                        <h3>Settings</h3>
+                        <div class="settings-section">
+                            <h4>Privacy & Data</h4>
+                            <div class="settings-button-group">
+                                <button id="clear-cache-btn" class="settings-btn" onclick="if(window.browser) window.browser.clearCache()">
+                                    <i class="fas fa-trash"></i> Clear Cache
+                                </button>
+                                <button id="clear-history-settings-btn" class="settings-btn" onclick="if(window.browser) window.browser.clearHistory()">
+                                    <i class="fas fa-history"></i> Clear History
+                                </button>
+                            </div>
+                            <p class="settings-hint">Clear your browsing data, cache, cookies, and website storage</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-logo">
+                    <img src="assets/ebwhite.png" alt="Logo">
+                </div>
+            </div>
+            <div id="webviews-container">
+                <div class="webview-wrapper" style="width:100%; height:100%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Alert/Confirm Modal (moved to body level) -->
+    <div id="custom-modal" class="modal" style="display: none;">
+        <div class="modal-content custom-alert">
+            <div class="modal-header">
+                <img src="assets/ebwhite.png" alt="EB" class="modal-logo">
+                <h3 id="modal-title">Everything Black Browser</h3>
+            </div>
+            <div class="modal-body">
+                <p id="modal-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ok" class="wallet-btn">OK</button>
+                <button id="modal-cancel" class="wallet-btn" style="display: none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Certificate Error Modal -->
+    <div class="cert-error-overlay" id="cert-error-overlay"></div>
+    <div class="cert-error-modal" id="cert-error-modal">
+        <div class="cert-error-header">
+            <div class="cert-error-icon">⚠️</div>
+            <div class="cert-error-title">Security Certificate Issue</div>
+        </div>
+        <div class="cert-error-content">
+            <div class="cert-error-message">
+                The website you're trying to visit has a certificate issue. This might happen because:
+            </div>
+            <ul style="margin: 10px 0; padding-left: 20px; color: #ccc;">
+                <li>The certificate has expired</li>
+                <li>The certificate is self-signed</li>
+                <li>The domain name doesn't match the certificate</li>
+            </ul>
+            <div class="cert-error-url" id="cert-error-url"></div>
+            <div class="cert-error-details" id="cert-error-details"></div>
+        </div>
+        <div class="cert-error-actions">
+            <button class="cert-error-btn cert-error-btn-safe" onclick="closeCertErrorModal()">Go Back to Safety</button>
+            <button class="cert-error-btn cert-error-btn-proceed" onclick="proceedAnywayModal()">Proceed Once</button>
+            <button class="cert-error-btn cert-error-btn-trust" onclick="trustSiteModal()" style="background: #666; color: #fff;">Always Trust This Site</button>
+        </div>
+    </div>
+    
+    <script src="config.js"></script>
+    <script src="searchFallback.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>

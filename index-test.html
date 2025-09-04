@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Everything Black Search</title>
+</head>
+<body>
+    <h1>Everything Black - Search Test</h1>
+    <p>Click one of these links to test the search:</p>
+    <ul>
+        <li><a href="search-simple.html?q=test">Simple Search Page - Query: "test"</a></li>
+        <li><a href="search-simple.html?q=She%20Interactive">Simple Search Page - Query: "She Interactive"</a></li>
+        <li><a href="search-results.html?q=test">Main Search Page - Query: "test"</a></li>
+        <li><a href="search-results.html?q=She%20Interactive">Main Search Page - Query: "She Interactive"</a></li>
+        <li><a href="test-live-search.html">API Test Page</a></li>
+        <li><a href="test-search-direct.html">Direct API Test</a></li>
+    </ul>
+    
+    <h2>Manual Search Test</h2>
+    <input type="text" id="query" placeholder="Enter search term" value="test">
+    <button onclick="testSearch()">Test Search</button>
+    
+    <script>
+        function testSearch() {
+            const query = document.getElementById('query').value;
+            window.location.href = 'search-results.html?q=' + encodeURIComponent(query);
+        }
+    </script>
+</body>
+</html>

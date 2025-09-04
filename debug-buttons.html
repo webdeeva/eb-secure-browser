@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Clear Buttons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .button-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+        .found { color: #4CAF50; }
+        .not-found { color: #f44336; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #FFD700;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #FFC700;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clear Buttons Debug Tool</h1>
+    
+    <div class="test-section">
+        <h2>Button Status</h2>
+        <div id="button-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Actions</h2>
+        <button onclick="checkButtons()">Check Buttons</button>
+        <button onclick="testClearCache()">Test Clear Cache</button>
+        <button onclick="testClearHistory()">Test Clear History</button>
+        <button onclick="showSettingsPanel()">Show Settings Panel</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" style="background: black; padding: 10px; border-radius: 5px; font-family: monospace; height: 200px; overflow-y: auto;"></div>
+    </div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('console-output');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc';
+            output.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function checkButtons() {
+            log('Checking buttons...');
+            const status = document.getElementById('button-status');
+            status.innerHTML = '';
+            
+            // Check clear cache button
+            const clearCacheBtn = document.getElementById('clear-cache-btn');
+            if (clearCacheBtn) {
+                status.innerHTML += `<div class="button-info found">✓ Clear Cache Button Found
+                    <br>ID: ${clearCacheBtn.id}
+                    <br>Text: "${clearCacheBtn.textContent.trim()}"
+                    <br>Visible: ${clearCacheBtn.offsetParent !== null}
+                    <br>Parent: ${clearCacheBtn.parentElement?.id || 'unknown'}
+                </div>`;
+                log('Clear cache button found', 'success');
+            } else {
+                status.innerHTML += '<div class="button-info not-found">✗ Clear Cache Button NOT Found</div>';
+                log('Clear cache button not found', 'error');
+            }
+            
+            // Check clear history settings button
+            const clearHistorySettingsBtn = document.getElementById('clear-history-settings-btn');
+            if (clearHistorySettingsBtn) {
+                status.innerHTML += `<div class="button-info found">✓ Clear History Settings Button Found
+                    <br>ID: ${clearHistorySettingsBtn.id}
+                    <br>Text: "${clearHistorySettingsBtn.textContent.trim()}"
+                    <br>Visible: ${clearHistorySettingsBtn.offsetParent !== null}
+                    <br>Parent: ${clearHistorySettingsBtn.parentElement?.id || 'unknown'}
+                </div>`;
+                log('Clear history settings button found', 'success');
+            } else {
+                status.innerHTML += '<div class="button-info not-found">✗ Clear History Settings Button NOT Found</div>';
+                log('Clear history settings button not found', 'error');
+            }
+            
+            // Check browser instance
+            if (window.browser) {
+                status.innerHTML += '<div class="button-info found">✓ Browser Instance Found</div>';
+                log('Browser instance found', 'success');
+            } else {
+                status.innerHTML += '<div class="button-info not-found">✗ Browser Instance NOT Found</div>';
+                log('Browser instance not found', 'error');
+            }
+            
+            // Check modal system
+            if (window.modalSystem) {
+                status.innerHTML += '<div class="button-info found">✓ Modal System Found</div>';
+                log('Modal system found', 'success');
+            } else {
+                status.innerHTML += '<div class="button-info not-found">✗ Modal System NOT Found</div>';
+                log('Modal system not found', 'error');
+            }
+        }
+        
+        function testClearCache() {
+            log('Testing clear cache...');
+            if (window.browser && window.browser.clearCache) {
+                try {
+                    window.browser.clearCache();
+                    log('Clear cache method called', 'success');
+                } catch (error) {
+                    log(`Error calling clearCache: ${error.message}`, 'error');
+                }
+            } else {
+                log('Browser or clearCache method not available', 'error');
+            }
+        }
+        
+        function testClearHistory() {
+            log('Testing clear history...');
+            if (window.browser && window.browser.clearHistory) {
+                try {
+                    window.browser.clearHistory();
+                    log('Clear history method called', 'success');
+                } catch (error) {
+                    log(`Error calling clearHistory: ${error.message}`, 'error');
+                }
+            } else {
+                log('Browser or clearHistory method not available', 'error');
+            }
+        }
+        
+        function showSettingsPanel() {
+            log('Attempting to show settings panel...');
+            const settingsPanel = document.getElementById('settings-panel');
+            if (settingsPanel) {
+                settingsPanel.style.display = 'block';
+                settingsPanel.classList.add('visible');
+                log('Settings panel shown', 'success');
+            } else {
+                log('Settings panel not found', 'error');
+            }
+        }
+        
+        // Auto-check on load
+        setTimeout(checkButtons, 1000);
+    </script>
+</body>
+</html>

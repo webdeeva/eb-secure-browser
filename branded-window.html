@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Everything Black</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #050505;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Title bar styles - matching main browser */
+        .title-bar {
+            background: #050505;
+            color: #e55400;
+            -webkit-app-region: drag;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 500;
+            user-select: none;
+        }
+        
+        .title-bar-logo {
+            width: auto;
+            height: 20px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        
+        .title-bar-text {
+            flex: 1;
+            text-align: center;
+            color: #e55400;
+        }
+        
+        .title-bar-controls {
+            display: flex;
+            gap: 6px;
+            -webkit-app-region: no-drag;
+            margin-right: 8px;
+        }
+        
+        .title-bar-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #050505;
+            width: 13px;
+            height: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 9px;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .title-bar-btn.minimize {
+            background: #f78513;
+        }
+        
+        .title-bar-btn.maximize {
+            background: #c44901;
+        }
+        
+        .title-bar-btn.close {
+            background: #933600;
+        }
+        
+        .title-bar-btn::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .title-bar-btn.minimize::before {
+            background: rgba(247, 133, 19, 0.2);
+        }
+        
+        .title-bar-btn.maximize::before {
+            background: rgba(196, 73, 1, 0.2);
+        }
+        
+        .title-bar-btn.close::before {
+            background: rgba(147, 54, 0, 0.2);
+        }
+        
+        .title-bar-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .title-bar-btn i {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            color: #050505;
+            font-size: 10px;
+        }
+        
+        .title-bar-btn:hover i {
+            opacity: 0.8;
+        }
+        
+        /* Navigation bar */
+        .nav-bar {
+            height: 50px;
+            background: #111;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: #999;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-btn:hover:not(:disabled) {
+            background: #1a1a1a;
+            color: #c44901;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .url-bar {
+            flex: 1;
+            height: 36px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 0 15px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .url-bar:focus {
+            border-color: #c44901;
+            box-shadow: 0 0 0 3px rgba(196, 73, 1, 0.1);
+        }
+        
+        /* Webview container */
+        .webview-container {
+            flex: 1;
+            position: relative;
+            background: #050505;
+        }
+        
+        webview {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #050505;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top-color: #c44901;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-bar">
+        <img src="assets/ebwhite.png" class="title-bar-logo" alt="EB">
+        <div class="title-bar-text">Everything Black</div>
+        <div class="title-bar-controls">
+            <button class="title-bar-btn minimize" id="minimize-btn"><i class="fas fa-minus"></i></button>
+            <button class="title-bar-btn maximize" id="maximize-btn"><i class="fas fa-square"></i></button>
+            <button class="title-bar-btn close" id="close-btn"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    
+    <div class="nav-bar">
+        <button class="nav-btn" id="back-btn" disabled>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-btn" id="forward-btn" disabled>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <button class="nav-btn" id="reload-btn">
+            <i class="fas fa-sync"></i>
+        </button>
+        <input type="text" class="url-bar" id="url-bar" readonly>
+        <button class="nav-btn" id="external-btn" title="Open in system browser">
+            <i class="fas fa-external-link-alt"></i>
+        </button>
+    </div>
+    
+    <div class="webview-container">
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+        <webview id="branded-webview" autosize="on" nodeintegration="off" partition="persist:branded"></webview>
+    </div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        const webview = document.getElementById('branded-webview');
+        const loadingOverlay = document.getElementById('loading');
+        const backBtn = document.getElementById('back-btn');
+        const forwardBtn = document.getElementById('forward-btn');
+        const reloadBtn = document.getElementById('reload-btn');
+        const urlBar = document.getElementById('url-bar');
+        const minimizeBtn = document.getElementById('minimize-btn');
+        const maximizeBtn = document.getElementById('maximize-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const externalBtn = document.getElementById('external-btn');
+        
+        // Get URL from query params
+        const params = new URLSearchParams(window.location.search);
+        const targetUrl = params.get('url') || 'https://everythingblack.xyz';
+        const windowTitle = params.get('title') || 'Everything Black';
+        
+        // Set window title
+        document.title = windowTitle;
+        document.querySelector('.title-bar-text').textContent = windowTitle;
+        
+        // Load the URL
+        webview.setAttribute('src', targetUrl);
+        
+        // Window controls
+        minimizeBtn.addEventListener('click', () => {
+            ipcRenderer.send('window-control', 'minimize');
+        });
+        
+        maximizeBtn.addEventListener('click', () => {
+            ipcRenderer.send('window-control', 'maximize');
+        });
+        
+        closeBtn.addEventListener('click', () => {
+            ipcRenderer.send('window-control', 'close');
+        });
+        
+        // Navigation controls
+        backBtn.addEventListener('click', () => {
+            webview.goBack();
+        });
+        
+        forwardBtn.addEventListener('click', () => {
+            webview.goForward();
+        });
+        
+        reloadBtn.addEventListener('click', () => {
+            webview.reload();
+        });
+        
+        externalBtn.addEventListener('click', () => {
+            const currentUrl = webview.getURL();
+            ipcRenderer.send('open-external', currentUrl);
+        });
+        
+        // Webview events
+        webview.addEventListener('did-start-loading', () => {
+            loadingOverlay.classList.remove('hidden');
+        });
+        
+        webview.addEventListener('did-stop-loading', () => {
+            loadingOverlay.classList.add('hidden');
+        });
+        
+        webview.addEventListener('did-navigate', (e) => {
+            urlBar.value = e.url;
+            updateNavButtons();
+        });
+        
+        webview.addEventListener('did-navigate-in-page', (e) => {
+            urlBar.value = e.url;
+            updateNavButtons();
+        });
+        
+        webview.addEventListener('page-title-updated', (e) => {
+            document.title = e.title + ' - Everything Black';
+        });
+        
+        function updateNavButtons() {
+            backBtn.disabled = !webview.canGoBack();
+            forwardBtn.disabled = !webview.canGoForward();
+        }
+        
+        // Initialize
+        webview.addEventListener('dom-ready', () => {
+            updateNavButtons();
+        });
+        
+        // Handle maximize button icon
+        ipcRenderer.on('window-maximized', (event, isMaximized) => {
+            const icon = maximizeBtn.querySelector('i');
+            if (isMaximized) {
+                icon.className = 'fas fa-clone';
+            } else {
+                icon.className = 'fas fa-square';
+            }
+        });
+    </script>
+</body>
+</html>

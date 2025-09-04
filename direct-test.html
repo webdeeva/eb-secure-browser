@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Clear Button Test</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            background: #C44901;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #a63a01;
+        }
+        .log {
+            background: #000;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Direct Clear Button Test</h1>
+    <p>Use these buttons to test the clear functionality directly:</p>
+    
+    <button onclick="testClearHistory()">Test Clear History</button>
+    <button onclick="testClearCache()">Test Clear Cache</button>
+    <button onclick="checkStatus()">Check Status</button>
+    
+    <div id="log" class="log">Log output will appear here...</div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        const logDiv = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function checkStatus() {
+            log('=== Status Check ===');
+            log('Browser instance: ' + (typeof window.browser !== 'undefined' ? 'Available' : 'Not available'));
+            log('ModalSystem: ' + (typeof modalSystem !== 'undefined' ? 'Available' : 'Not available'));
+            
+            if (window.browser) {
+                log('clearHistory method: ' + (typeof window.browser.clearHistory === 'function' ? 'Available' : 'Not available'));
+                log('clearCache method: ' + (typeof window.browser.clearCache === 'function' ? 'Available' : 'Not available'));
+            }
+        }
+        
+        async function testClearHistory() {
+            log('Testing clear history...');
+            
+            if (window.browser && typeof window.browser.clearHistory === 'function') {
+                try {
+                    await window.browser.clearHistory();
+                    log('Clear history function called successfully');
+                } catch (error) {
+                    log('Error calling clearHistory: ' + error.message);
+                }
+            } else {
+                log('Falling back to direct IPC call...');
+                ipcRenderer.send('clear-history');
+                log('Direct IPC message sent');
+                
+                ipcRenderer.once('history-cleared', () => {
+                    log('History cleared successfully!');
+                });
+            }
+        }
+        
+        async function testClearCache() {
+            log('Testing clear cache...');
+            
+            if (window.browser && typeof window.browser.clearCache === 'function') {
+                try {
+                    await window.browser.clearCache();
+                    log('Clear cache function called successfully');
+                } catch (error) {
+                    log('Error calling clearCache: ' + error.message);
+                }
+            } else {
+                log('Falling back to direct IPC call...');
+                try {
+                    const result = await ipcRenderer.invoke('clear-cache');
+                    if (result.success) {
+                        log('Cache cleared successfully!');
+                    } else {
+                        log('Failed to clear cache: ' + result.error);
+                    }
+                } catch (error) {
+                    log('Error with IPC invoke: ' + error.message);
+                }
+            }
+        }
+        
+        // Initial status check
+        setTimeout(() => {
+            checkStatus();
+        }, 1000);
+    </script>
+</body>
+</html>

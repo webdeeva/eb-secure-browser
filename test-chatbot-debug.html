@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot Debug Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #C44901;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #d65502;
+        }
+        .log {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .info {
+            color: #2196F3;
+        }
+        .artifact-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+            max-width: 700px;
+        }
+        .artifact-header {
+            background: #222;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .artifact-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #C44901;
+        }
+        .artifact-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .artifact-button {
+            background: #333;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .artifact-button:hover {
+            background: #444;
+        }
+        .artifact-content {
+            padding: 16px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .artifact-content pre {
+            margin: 0;
+        }
+        .artifact-content code {
+            background: none;
+            padding: 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Check window.electronAPI</h2>
+        <button onclick="checkElectronAPI()">Check Electron API</button>
+        <div id="electronAPILog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Clipboard Functions</h2>
+        <button onclick="testClipboard()">Test Clipboard API</button>
+        <button onclick="testFallbackClipboard()">Test Fallback Clipboard</button>
+        <div id="clipboardLog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Download Functions</h2>
+        <button onclick="testDownload()">Test Download API</button>
+        <button onclick="testFallbackDownload()">Test Fallback Download</button>
+        <div id="downloadLog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Test Artifact Buttons</h2>
+        <div class="artifact-container">
+            <div class="artifact-header">
+                <span class="artifact-title">TEST CODE</span>
+                <div class="artifact-actions">
+                    <button class="artifact-button artifact-copy" data-artifact-id="test-artifact">Copy</button>
+                    <button class="artifact-button artifact-download" data-artifact-id="test-artifact" data-artifact-type="javascript">Download</button>
+                </div>
+            </div>
+            <div class="artifact-content" id="test-artifact">
+                <pre><code>// Test code content
+function helloWorld() {
+    console.log("Hello from test artifact!");
+    return "This is a test";
+}</code></pre>
+            </div>
+        </div>
+        <div id="artifactLog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Console Logs</h2>
+        <button onclick="clearLogs()">Clear Console Logs</button>
+        <div id="consoleLog" class="log"></div>
+    </div>
+
+    <script>
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog('consoleLog', args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('consoleLog', args.join(' '), 'error');
+        };
+        
+        function addLog(elementId, message, type = 'info') {
+            const logDiv = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+        }
+        
+        function checkElectronAPI() {
+            const log = document.getElementById('electronAPILog');
+            log.innerHTML = '';
+            
+            addLog('electronAPILog', 'Checking window.electronAPI...', 'info');
+            
+            if (typeof window.electronAPI !== 'undefined') {
+                addLog('electronAPILog', '✓ window.electronAPI exists', 'success');
+                addLog('electronAPILog', 'Available methods: ' + Object.keys(window.electronAPI).join(', '), 'info');
+                
+                // Check each method
+                for (const method of Object.keys(window.electronAPI)) {
+                    const type = typeof window.electronAPI[method];
+                    addLog('electronAPILog', `  - ${method}: ${type}`, 'info');
+                }
+            } else {
+                addLog('electronAPILog', '✗ window.electronAPI is undefined', 'error');
+                
+                // Check if we're in Electron
+                if (typeof require !== 'undefined') {
+                    addLog('electronAPILog', '✓ Node.js require is available', 'success');
+                    try {
+                        const { ipcRenderer } = require('electron');
+                        addLog('electronAPILog', '✓ Can access electron.ipcRenderer directly', 'success');
+                    } catch (e) {
+                        addLog('electronAPILog', '✗ Cannot access electron: ' + e.message, 'error');
+                    }
+                } else {
+                    addLog('electronAPILog', '✗ Not running in Electron context', 'error');
+                }
+            }
+        }
+        
+        async function testClipboard() {
+            addLog('clipboardLog', 'Testing clipboard via electronAPI...', 'info');
+            
+            try {
+                if (window.electronAPI && window.electronAPI.copyToClipboard) {
+                    const result = await window.electronAPI.copyToClipboard('Test clipboard content');
+                    if (result.success) {
+                        addLog('clipboardLog', '✓ Clipboard copy successful', 'success');
+                    } else {
+                        addLog('clipboardLog', '✗ Clipboard copy failed: ' + result.error, 'error');
+                    }
+                } else {
+                    addLog('clipboardLog', '✗ electronAPI.copyToClipboard not available', 'error');
+                }
+            } catch (error) {
+                addLog('clipboardLog', '✗ Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function testFallbackClipboard() {
+            addLog('clipboardLog', 'Testing fallback clipboard methods...', 'info');
+            
+            // Test navigator.clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText('Test fallback clipboard');
+                    addLog('clipboardLog', '✓ navigator.clipboard.writeText successful', 'success');
+                } catch (error) {
+                    addLog('clipboardLog', '✗ navigator.clipboard failed: ' + error.message, 'error');
+                }
+            } else {
+                addLog('clipboardLog', '✗ navigator.clipboard not available', 'error');
+            }
+            
+            // Test document.execCommand
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = 'Test execCommand clipboard';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                if (success) {
+                    addLog('clipboardLog', '✓ document.execCommand("copy") successful', 'success');
+                } else {
+                    addLog('clipboardLog', '✗ document.execCommand("copy") failed', 'error');
+                }
+            } catch (error) {
+                addLog('clipboardLog', '✗ execCommand error: ' + error.message, 'error');
+            }
+        }
+        
+        async function testDownload() {
+            addLog('downloadLog', 'Testing download via electronAPI...', 'info');
+            
+            try {
+                if (window.electronAPI && window.electronAPI.downloadFile) {
+                    const result = await window.electronAPI.downloadFile('Test download content', 'test.txt');
+                    if (result.success) {
+                        addLog('downloadLog', '✓ Download successful: ' + result.path, 'success');
+                    } else if (result.canceled) {
+                        addLog('downloadLog', '⚠ Download canceled by user', 'info');
+                    } else {
+                        addLog('downloadLog', '✗ Download failed: ' + result.error, 'error');
+                    }
+                } else {
+                    addLog('downloadLog', '✗ electronAPI.downloadFile not available', 'error');
+                }
+            } catch (error) {
+                addLog('downloadLog', '✗ Error: ' + error.message, 'error');
+            }
+        }
+        
+        function testFallbackDownload() {
+            addLog('downloadLog', 'Testing fallback download...', 'info');
+            
+            try {
+                const blob = new Blob(['Test fallback download content'], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'test-fallback.txt';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                addLog('downloadLog', '✓ Fallback download triggered', 'success');
+            } catch (error) {
+                addLog('downloadLog', '✗ Fallback download error: ' + error.message, 'error');
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('consoleLog').innerHTML = '';
+            addLog('consoleLog', 'Console logs cleared', 'info');
+        }
+        
+        // Set up event listeners for artifact buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('artifact-copy')) {
+                e.preventDefault();
+                const artifactId = e.target.getAttribute('data-artifact-id');
+                addLog('artifactLog', `Copy button clicked for artifact: ${artifactId}`, 'info');
+                testArtifactCopy(artifactId);
+            } else if (e.target.classList.contains('artifact-download')) {
+                e.preventDefault();
+                const artifactId = e.target.getAttribute('data-artifact-id');
+                const artifactType = e.target.getAttribute('data-artifact-type');
+                addLog('artifactLog', `Download button clicked for artifact: ${artifactId}, type: ${artifactType}`, 'info');
+                testArtifactDownload(artifactId, artifactType);
+            }
+        });
+        
+        async function testArtifactCopy(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                addLog('artifactLog', '✗ Artifact element not found: ' + id, 'error');
+                return;
+            }
+            
+            const codeElement = element.querySelector('code');
+            const content = codeElement ? codeElement.textContent : element.textContent;
+            addLog('artifactLog', 'Content to copy: ' + content.substring(0, 50) + '...', 'info');
+            
+            // Try Electron API first
+            if (window.electronAPI && window.electronAPI.copyToClipboard) {
+                try {
+                    const result = await window.electronAPI.copyToClipboard(content);
+                    if (result.success) {
+                        addLog('artifactLog', '✓ Copy successful via Electron', 'success');
+                        showToast('Copied to clipboard!');
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (err) {
+                    addLog('artifactLog', '✗ Electron copy failed: ' + err.message, 'error');
+                    // Try fallback
+                    fallbackCopy(content);
+                }
+            } else {
+                // Use fallback
+                fallbackCopy(content);
+            }
+        }
+        
+        function fallbackCopy(content) {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = content;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                if (success) {
+                    addLog('artifactLog', '✓ Fallback copy successful', 'success');
+                    showToast('Copied to clipboard!');
+                } else {
+                    addLog('artifactLog', '✗ Fallback copy failed', 'error');
+                }
+            } catch (err) {
+                addLog('artifactLog', '✗ Fallback copy error: ' + err.message, 'error');
+            }
+        }
+        
+        async function testArtifactDownload(id, type) {
+            const element = document.getElementById(id);
+            if (!element) {
+                addLog('artifactLog', '✗ Artifact element not found: ' + id, 'error');
+                return;
+            }
+            
+            const codeElement = element.querySelector('code');
+            const content = codeElement ? codeElement.textContent : element.textContent;
+            const filename = `artifact-${Date.now()}.${type === 'javascript' ? 'js' : 'txt'}`;
+            
+            // Try Electron API first
+            if (window.electronAPI && window.electronAPI.downloadFile) {
+                try {
+                    const result = await window.electronAPI.downloadFile(content, filename);
+                    if (result.success) {
+                        addLog('artifactLog', '✓ Download successful: ' + result.path, 'success');
+                        showToast(`Saved to ${result.path}`);
+                    } else {
+                        throw new Error(result.error || 'Download failed');
+                    }
+                } catch (err) {
+                    addLog('artifactLog', '✗ Electron download failed: ' + err.message, 'error');
+                    fallbackDownload(content, filename);
+                }
+            } else {
+                fallbackDownload(content, filename);
+            }
+        }
+        
+        function fallbackDownload(content, filename) {
+            try {
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                addLog('artifactLog', '✓ Fallback download triggered: ' + filename, 'success');
+                showToast(`Downloaded as ${filename}`);
+            } catch (err) {
+                addLog('artifactLog', '✗ Fallback download error: ' + err.message, 'error');
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #C44901;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Run initial check
+        window.addEventListener('load', () => {
+            checkElectronAPI();
+        });
+    </script>
+</body>
+</html>

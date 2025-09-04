@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search API Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .toggle-group {
+            margin-bottom: 10px;
+        }
+        .toggle-group label {
+            display: inline-block;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search API Test Dashboard</h1>
+
+    <!-- API Status -->
+    <div class="test-section">
+        <h2>API Status</h2>
+        <p>
+            <span class="status-indicator" id="api-status"></span>
+            <span id="api-status-text">Checking...</span>
+        </p>
+        <p>API URL: <code id="api-url"></code></p>
+        <button onclick="checkAPIStatus()">Check Status</button>
+    </div>
+
+    <!-- Basic Search Test -->
+    <div class="test-section">
+        <h2>Basic Search Test</h2>
+        <div class="input-group">
+            <label>Search Query:</label>
+            <input type="text" id="search-query" placeholder="e.g., coffee shops" value="coffee">
+        </div>
+        <div class="input-group">
+            <label>Location:</label>
+            <input type="text" id="search-location" placeholder="e.g., New York" value="">
+        </div>
+        <div class="input-group">
+            <label>Categories (comma-separated):</label>
+            <input type="text" id="search-categories" placeholder="e.g., restaurants,cafes" value="">
+        </div>
+        <button onclick="testBasicSearch()">Test Basic Search</button>
+        <div id="basic-search-results" class="results" style="display:none;"></div>
+    </div>
+
+    <!-- Enhanced Search Test -->
+    <div class="test-section">
+        <h2>Enhanced Search Test</h2>
+        <div class="input-group">
+            <label>Query:</label>
+            <input type="text" id="enhanced-query" placeholder="e.g., What's the best pizza place?" value="What's the best coffee shop?">
+        </div>
+        <div class="toggle-group">
+            <label>Enhancement Mode:</label>
+            <label><input type="radio" name="enhance-mode" value="auto" checked> Auto</label>
+            <label><input type="radio" name="enhance-mode" value="always"> Always</label>
+            <label><input type="radio" name="enhance-mode" value="never"> Never</label>
+        </div>
+        <button onclick="testEnhancedSearch()">Test Enhanced Search</button>
+        <div id="enhanced-search-results" class="results" style="display:none;"></div>
+    </div>
+
+    <!-- Autocomplete Test -->
+    <div class="test-section">
+        <h2>Autocomplete Test</h2>
+        <div class="input-group">
+            <label>Start typing:</label>
+            <input type="text" id="autocomplete-query" placeholder="e.g., cof" value="cof" oninput="testAutocomplete()">
+        </div>
+        <div id="autocomplete-results" class="results" style="display:none;"></div>
+    </div>
+
+    <!-- Raw API Test -->
+    <div class="test-section">
+        <h2>Raw API Test</h2>
+        <div class="input-group">
+            <label>Endpoint:</label>
+            <select id="raw-endpoint">
+                <option value="/api/health">Health Check</option>
+                <option value="/api/v1/search">Basic Search</option>
+                <option value="/api/v1/enhanced-search">Enhanced Search</option>
+                <option value="/api/v1/search/suggest">Autocomplete</option>
+                <option value="/api/v1/businesses">Businesses</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Query Parameters (JSON):</label>
+            <input type="text" id="raw-params" placeholder='{"q": "coffee", "limit": 10}' value='{"q": "coffee", "limit": 5}'>
+        </div>
+        <button onclick="testRawAPI()">Send Request</button>
+        <div id="raw-results" class="results" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Load config
+        const config = require('./config.js');
+        const API_BASE = config.BACKEND_URL;
+
+        // Update API URL display
+        document.getElementById('api-url').textContent = API_BASE;
+
+        // API Status Check
+        async function checkAPIStatus() {
+            const statusEl = document.getElementById('api-status');
+            const statusTextEl = document.getElementById('api-status-text');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusEl.className = 'status-indicator status-online';
+                    statusTextEl.textContent = `Online - ${data.message || 'API is healthy'}`;
+                } else {
+                    statusEl.className = 'status-indicator status-offline';
+                    statusTextEl.textContent = `Error - Status: ${response.status}`;
+                }
+            } catch (error) {
+                statusEl.className = 'status-indicator status-offline';
+                statusTextEl.textContent = `Offline - ${error.message}`;
+            }
+        }
+
+        // Basic Search Test
+        async function testBasicSearch() {
+            const resultsEl = document.getElementById('basic-search-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = '<p>Loading...</p>';
+
+            const params = new URLSearchParams({
+                q: document.getElementById('search-query').value,
+                location: document.getElementById('search-location').value,
+                categories: document.getElementById('search-categories').value,
+                limit: 10
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/search?${params}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsEl.innerHTML = `
+                        <div class="success">Success! Found ${data.businesses?.length || 0} results</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultsEl.innerHTML = `
+                        <div class="error">Error: ${response.status} ${response.statusText}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsEl.innerHTML = `<div class="error">Request failed: ${error.message}</div>`;
+            }
+        }
+
+        // Enhanced Search Test
+        async function testEnhancedSearch() {
+            const resultsEl = document.getElementById('enhanced-search-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = '<p>Loading...</p>';
+
+            const enhanceMode = document.querySelector('input[name="enhance-mode"]:checked').value;
+            const params = new URLSearchParams({
+                q: document.getElementById('enhanced-query').value,
+                enhance: enhanceMode,
+                limit: 10
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/enhanced-search?${params}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsEl.innerHTML = `
+                        <div class="success">Success! Enhanced search completed</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultsEl.innerHTML = `
+                        <div class="error">Error: ${response.status} ${response.statusText}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsEl.innerHTML = `<div class="error">Request failed: ${error.message}</div>`;
+            }
+        }
+
+        // Autocomplete Test
+        let autocompleteTimeout;
+        async function testAutocomplete() {
+            clearTimeout(autocompleteTimeout);
+            const resultsEl = document.getElementById('autocomplete-results');
+            
+            autocompleteTimeout = setTimeout(async () => {
+                resultsEl.style.display = 'block';
+                resultsEl.innerHTML = '<p>Loading suggestions...</p>';
+
+                const params = new URLSearchParams({
+                    q: document.getElementById('autocomplete-query').value,
+                    limit: 5
+                });
+
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/search/suggest?${params}`);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        resultsEl.innerHTML = `
+                            <div class="success">Suggestions received</div>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                    } else {
+                        resultsEl.innerHTML = `
+                            <div class="error">Error: ${response.status}</div>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                    }
+                } catch (error) {
+                    resultsEl.innerHTML = `<div class="error">Request failed: ${error.message}</div>`;
+                }
+            }, 300);
+        }
+
+        // Raw API Test
+        async function testRawAPI() {
+            const resultsEl = document.getElementById('raw-results');
+            resultsEl.style.display = 'block';
+            resultsEl.innerHTML = '<p>Loading...</p>';
+
+            const endpoint = document.getElementById('raw-endpoint').value;
+            const paramsStr = document.getElementById('raw-params').value;
+            
+            try {
+                let params = '';
+                if (paramsStr) {
+                    const paramsObj = JSON.parse(paramsStr);
+                    params = '?' + new URLSearchParams(paramsObj).toString();
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}${params}`);
+                const data = await response.json();
+                
+                resultsEl.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsEl.innerHTML = `<div class="error">Request failed: ${error.message}</div>`;
+            }
+        }
+
+        // Check status on load
+        checkAPIStatus();
+    </script>
+</body>
+</html>

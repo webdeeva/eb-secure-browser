@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Page Could Not Be Loaded</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #e55400;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #e55400;
+            font-weight: 600;
+        }
+        
+        .error-message {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+        
+        .error-details {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #e55400;
+        }
+        
+        .error-url {
+            color: #e55400;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .error-code {
+            color: #888;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .suggestions {
+            text-align: left;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        
+        .suggestions h3 {
+            color: #e55400;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .suggestions li {
+            color: #bbb;
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 14px;
+        }
+        
+        .suggestions li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #e55400;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #e55400;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #ff6600;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 84, 0, 0.4);
+        }
+        
+        button.secondary {
+            background: transparent;
+            border: 2px solid #e55400;
+            color: #e55400;
+        }
+        
+        button.secondary:hover {
+            background: #e55400;
+            color: #fff;
+        }
+        
+        .eb-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1>Oops! We couldn't load this page</h1>
+        
+        <div class="error-message">
+            The webpage you're trying to visit isn't loading properly. This might be temporary, or there could be an issue with the website.
+        </div>
+        
+        <div class="error-details">
+            <div class="error-url" id="error-url">Loading...</div>
+            <div class="error-code" id="error-code">Error Code: Unknown</div>
+        </div>
+        
+        <div class="suggestions">
+            <h3>💡 What you can try:</h3>
+            <ul>
+                <li>Check if you're connected to the internet</li>
+                <li>Make sure the web address is spelled correctly</li>
+                <li>The website might be temporarily down - try again in a few minutes</li>
+                <li>Clear your browser cache and cookies</li>
+                <li>Try visiting a different website to test your connection</li>
+            </ul>
+        </div>
+        
+        <div class="action-buttons">
+            <button onclick="retry()">Try Again</button>
+            <button onclick="goBack()" class="secondary">Go Back</button>
+            <button onclick="goHome()" class="secondary">Home</button>
+        </div>
+    </div>
+    
+    <script>
+        // Get error details from URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const errorUrl = params.get('url') || 'Unknown URL';
+        const errorCode = params.get('error') || 'ERR_UNKNOWN';
+        const errorMessage = params.get('message') || '';
+        
+        // Display error details
+        document.getElementById('error-url').textContent = errorUrl;
+        
+        // Map error codes to human-readable messages
+        const errorMessages = {
+            'ERR_NAME_NOT_RESOLVED': 'Website not found - Check the web address',
+            'ERR_CONNECTION_REFUSED': 'Connection refused - The website might be down',
+            'ERR_CONNECTION_FAILED': 'Connection failed - Check your internet',
+            'ERR_INTERNET_DISCONNECTED': 'No internet connection',
+            'ERR_CONNECTION_TIMED_OUT': 'Connection timed out - The website is taking too long to respond',
+            'ERR_CERT_COMMON_NAME_INVALID': 'Security certificate issue',
+            'ERR_CERT_AUTHORITY_INVALID': 'Security certificate not trusted',
+            'ERR_SSL_PROTOCOL_ERROR': 'Secure connection failed',
+            'ERR_FAILED': 'Page failed to load',
+            'ERR_ABORTED': 'Page loading was stopped',
+            'ERR_ACCESS_DENIED': 'Access denied to this page',
+            'ERR_FILE_NOT_FOUND': 'Page not found (404)',
+            'ERR_TOO_MANY_REDIRECTS': 'Too many redirects - The page is stuck in a loop',
+            'ERR_EMPTY_RESPONSE': 'No response from website',
+            'ERR_BLOCKED_BY_CLIENT': 'Page was blocked',
+            'ERR_NETWORK_CHANGED': 'Network connection changed while loading'
+        };
+        
+        const friendlyError = errorMessages[errorCode] || `Error: ${errorCode}`;
+        document.getElementById('error-code').textContent = friendlyError;
+        
+        // Add additional context for specific errors
+        if (errorCode.includes('CERT') || errorCode.includes('SSL')) {
+            const suggestions = document.querySelector('.suggestions ul');
+            const certItem = document.createElement('li');
+            certItem.textContent = 'The website\'s security certificate may have expired or be misconfigured';
+            certItem.style.color = '#ff9966';
+            suggestions.insertBefore(certItem, suggestions.firstChild);
+        }
+        
+        function retry() {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.send('reload-page');
+        }
+        
+        function goBack() {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.send('go-back');
+        }
+        
+        function goHome() {
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.send('navigate-home');
+        }
+        
+        // Listen for keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.metaKey && e.key === 'r')) {
+                e.preventDefault();
+                retry();
+            }
+        });
+    </script>
+</body>
+</html>

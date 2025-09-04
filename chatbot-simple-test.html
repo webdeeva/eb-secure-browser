@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Chatbot Layout Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #333;
+            padding: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .messages {
+            flex: 1;
+            background: #111;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            background: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .input-area {
+            background: #333;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #555;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Chat Header</h2>
+        </div>
+        
+        <div class="messages">
+            <div class="message">Message 1</div>
+            <div class="message">Message 2</div>
+            <div class="message">Message 3</div>
+            <div class="message">Message 4</div>
+            <div class="message">Message 5</div>
+            <div class="message">Message 6</div>
+            <div class="message">Message 7</div>
+            <div class="message">Message 8</div>
+            <div class="message">Message 9</div>
+            <div class="message">Message 10</div>
+            <div class="message">You should be able to scroll to see all messages</div>
+            <div class="message">And the input should always be visible at the bottom</div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" placeholder="Type your message here..." />
+        </div>
+    </div>
+</body>
+</html>
