@@ -263,6 +263,61 @@ class SecureBrowser {
         await this.loadHistory();
         await this.loadSidebarConfig();
         
+        // Setup password panel close button
+        const closePasswordBtn = document.getElementById('close-password-panel');
+        if (closePasswordBtn) {
+            closePasswordBtn.addEventListener('click', () => {
+                this.togglePasswordPanel();
+            });
+        }
+        
+        // Setup Web3 panel close button
+        const closeWeb3Btn = document.getElementById('close-web3-panel');
+        if (closeWeb3Btn) {
+            closeWeb3Btn.addEventListener('click', () => {
+                this.toggleWeb3Panel();
+            });
+        }
+        
+        // Listen for messages from wizard iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'openWalletPanel') {
+                console.log('[SecureBrowser] Received openWalletPanel message');
+                
+                // Open the Web3 wallet panel (right panel)
+                this.toggleWeb3Panel();
+                
+                // If we should highlight the create button
+                if (event.data.highlightCreateButton) {
+                    setTimeout(() => {
+                        // Target the correct create wallet button in the right panel
+                        const createBtn = document.getElementById('create-wallet-right');
+                        if (createBtn) {
+                            console.log('[SecureBrowser] Adding pulse highlight to create wallet button');
+                            createBtn.classList.add('pulse-highlight');
+                            
+                            // Remove highlight after 10 seconds
+                            setTimeout(() => {
+                                createBtn.classList.remove('pulse-highlight');
+                            }, 10000);
+                        } else {
+                            console.warn('[SecureBrowser] Create wallet button not found in right panel');
+                        }
+                    }, 500); // Wait for panel to open
+                }
+            } else if (event.data.type === 'closeWizardTab') {
+                console.log('[SecureBrowser] Received closeWizardTab message');
+                // Find and close the wizard tab
+                const wizardTab = Array.from(document.querySelectorAll('.tab')).find(tab => 
+                    tab.textContent.includes('Welcome') || tab.querySelector('webview[src*="wizard"]')
+                );
+                if (wizardTab) {
+                    const tabId = wizardTab.dataset.tabId;
+                    this.closeTab(tabId);
+                }
+            }
+        });
+        
         // Check if this is the first time running the browser
         // DEV MODE: Force show wizard for testing
         const isDev = true; // Set to false for production
@@ -966,15 +1021,29 @@ class SecureBrowser {
     }
     
     showPanel(panelName) {
-        const panels = ['bookmarks-panel', 'history-panel', 'web3-panel'];
+        const panels = ['bookmarks-panel', 'history-panel', 'web3-panel', 'password-panel'];
         panels.forEach(panel => {
             const el = document.getElementById(panel);
             if (el) {
-                el.style.display = panel === `${panelName}-panel` ? 'block' : 'none';
+                // Handle special case for passwords panel
+                const targetPanel = panelName === 'passwords' ? 'password-panel' : `${panelName}-panel`;
+                el.style.display = panel === targetPanel ? 'block' : 'none';
             }
         });
         
-        const buttons = ['toggle-bookmarks', 'toggle-history', 'toggle-web3'];
+        // Handle iframe for password panel
+        if (panelName === 'passwords') {
+            const passwordPanel = document.getElementById('password-panel');
+            if (passwordPanel) {
+                passwordPanel.style.display = 'block';
+            }
+            const passwordIframe = document.getElementById('password-iframe');
+            if (passwordIframe && !passwordIframe.src) {
+                passwordIframe.src = 'password-manager.html';
+            }
+        }
+        
+        const buttons = ['toggle-bookmarks', 'toggle-history', 'toggle-web3', 'toggle-passwords'];
         buttons.forEach(button => {
             const el = document.getElementById(button);
             if (el) {
@@ -1349,8 +1418,15 @@ class SecureBrowser {
                 this.createTab(buttonConfig.url);
                 break;
             case 'panel':
-                // Toggle panel
-                this.togglePanel(buttonConfig.id);
+                // Special handling for password manager and web3 - open right panel
+                if (buttonConfig.id === 'passwords') {
+                    this.togglePasswordPanel();
+                } else if (buttonConfig.id === 'web3') {
+                    this.toggleWeb3Panel();
+                } else {
+                    // Toggle regular left panel
+                    this.togglePanel(buttonConfig.id);
+                }
                 break;
             case 'settings':
                 // Toggle settings panel
@@ -1362,6 +1438,68 @@ class SecureBrowser {
                 break;
             default:
                 console.log('[SecureBrowser] Unknown button action:', buttonConfig.action);
+        }
+    }
+    
+    togglePasswordPanel() {
+        const rightPanel = document.getElementById('password-right-panel');
+        const passwordIframe = document.getElementById('password-iframe');
+        
+        if (rightPanel) {
+            const isOpen = rightPanel.classList.contains('open');
+            
+            if (isOpen) {
+                // Close panel
+                rightPanel.classList.remove('open');
+                setTimeout(() => {
+                    rightPanel.style.display = 'none';
+                }, 300); // Wait for animation
+            } else {
+                // Open panel
+                rightPanel.style.display = 'block';
+                setTimeout(() => {
+                    rightPanel.classList.add('open');
+                }, 10); // Small delay for CSS transition
+                
+                // Load iframe if not loaded
+                if (passwordIframe && !passwordIframe.src) {
+                    passwordIframe.src = 'password-manager.html';
+                }
+            }
+        }
+    }
+    
+    toggleWeb3Panel() {
+        console.log('[SecureBrowser] toggleWeb3Panel called');
+        const rightPanel = document.getElementById('web3-right-panel');
+        const web3Iframe = document.getElementById('web3-iframe');
+        
+        if (rightPanel) {
+            const isOpen = rightPanel.classList.contains('open');
+            console.log('[SecureBrowser] Web3 panel current state:', isOpen ? 'open' : 'closed');
+            
+            if (isOpen) {
+                // Close panel
+                console.log('[SecureBrowser] Closing Web3 panel');
+                rightPanel.classList.remove('open');
+                setTimeout(() => {
+                    rightPanel.style.display = 'none';
+                }, 300); // Wait for animation
+            } else {
+                // Open panel
+                console.log('[SecureBrowser] Opening Web3 panel');
+                rightPanel.style.display = 'block';
+                setTimeout(() => {
+                    rightPanel.classList.add('open');
+                }, 10); // Small delay for CSS transition
+                
+                // Load iframe if not loaded (Web3 panel doesn't use iframe, so this is optional)
+                if (web3Iframe && !web3Iframe.src) {
+                    web3Iframe.src = 'web3.html';
+                }
+            }
+        } else {
+            console.error('[SecureBrowser] web3-right-panel element not found!');
         }
     }
     

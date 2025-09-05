@@ -1859,6 +1859,56 @@ webview.active {
     color: #C44901;
 }
 
+/* Right Panel for Password Manager */
+.right-panel {
+    position: fixed;
+    top: 40px; /* Below title bar */
+    right: 0;
+    width: 400px;
+    height: calc(100vh - 40px);
+    background: #070707;
+    border-left: 1px solid #161616;
+    z-index: 999;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.right-panel.open {
+    transform: translateX(0);
+}
+
+.right-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: #0a0a0a;
+    border-bottom: 1px solid #161616;
+    height: 50px;
+}
+
+.right-panel-header h3 {
+    color: #f78513;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-panel-btn {
+    background: transparent;
+    border: none;
+    color: #c44901;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.close-panel-btn:hover {
+    color: #f78513;
+}
+
 /* Certificate Error Modal */
 .cert-error-modal {
     display: none;
@@ -1970,6 +2020,27 @@ webview.active {
 
 .cert-error-overlay.active {
     display: block;
+}
+
+/* Pulse animation for highlighting buttons */
+@keyframes pulse-highlight {
+    0% {
+        box-shadow: 0 0 0 0 rgba(247, 133, 19, 0.7);
+        border-color: #f78513;
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(247, 133, 19, 0);
+        border-color: #ff9933;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(247, 133, 19, 0);
+        border-color: #f78513;
+    }
+}
+
+.pulse-highlight {
+    animation: pulse-highlight 2s infinite;
+    border: 2px solid #f78513 !important;
 }
 
 

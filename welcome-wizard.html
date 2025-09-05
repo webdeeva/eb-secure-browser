@@ -783,22 +783,98 @@
             currentStep = steps.indexOf('step-complete');
             showStep(currentStep);
         }
+        
+        function skipToComplete() {
+            // Mark wizard as completed and skip to complete step
+            localStorage.setItem('wizardCompleted', 'true');
+            currentStep = steps.indexOf('step-complete');
+            showStep(currentStep);
+        }
 
         async function createWallet() {
             try {
-                const result = await window.ebAPI.wallet.generate();
-                if (result.success && result.wallet) {
-                    walletMnemonic = result.wallet.mnemonic;
-                    document.getElementById('mnemonicDisplay').textContent = walletMnemonic;
-                    nextStep();
+                console.log('[WelcomeWizard] createWallet called');
+                console.log('[WelcomeWizard] window.parent:', window.parent);
+                console.log('[WelcomeWizard] window.parent !== window:', window.parent !== window);
+                console.log('[WelcomeWizard] window.top:', window.top);
+                console.log('[WelcomeWizard] window === window.top:', window === window.top);
+                
+                // Instead of creating wallet here, open the wallet panel and highlight the create button
+                // First, complete the wizard
+                localStorage.setItem('wizardCompleted', 'true');
+                
+                // Check multiple conditions to detect if we're in a webview/iframe
+                const inWebview = (window.parent && window.parent !== window) || 
+                                (window.top && window.top !== window) ||
+                                (window.frameElement !== null) ||
+                                (window.location !== window.parent?.location);
+                
+                console.log('[WelcomeWizard] Detected webview/iframe:', inWebview);
+                
+                if (inWebview) {
+                    // We're in a webview, communicate with parent
+                    console.log('[WelcomeWizard] Sending openWalletPanel message to parent');
+                    try {
+                        window.parent.postMessage({
+                            type: 'openWalletPanel',
+                            highlightCreateButton: true
+                        }, '*');
+                        
+                        // Show a message to the user
+                        document.querySelector('#step-wallet .wallet-setup').innerHTML = `
+                            <h3 style="color: #f78513;">Opening Wallet Panel...</h3>
+                            <p>Look for the GuapcoinX Wallet panel on the right side of your screen.</p>
+                            <p>The "Create New Wallet" button will be highlighted for you!</p>
+                            <div style="margin-top: 20px;">
+                                <button class="btn btn-primary" onclick="completeWizard()">Got it!</button>
+                            </div>
+                        `;
+                        
+                        console.log('[WelcomeWizard] Message sent successfully');
+                    } catch (postMessageError) {
+                        console.error('[WelcomeWizard] Failed to send postMessage:', postMessageError);
+                        throw postMessageError;
+                    }
                 } else {
-                    alert('Failed to create wallet. You can set it up later from the Web3 panel.');
-                    skipWallet();
+                    console.log('[WelcomeWizard] Showing wallet panel instructions');
+                    // Just show instructions - don't try to create wallet from wizard
+                    document.querySelector('#step-wallet .wallet-setup').innerHTML = `
+                        <h3 style="color: #f78513;">Ready to Create Your Wallet!</h3>
+                        <p style="font-size: 16px; margin: 20px 0;">To create your GuapcoinX wallet:</p>
+                        <ol style="text-align: left; font-size: 15px; line-height: 1.8; max-width: 400px; margin: 0 auto;">
+                            <li>Look for the <strong style="color: #f78513;">Web3/GuapcoinX</strong> button in the left sidebar</li>
+                            <li>Click it to open the wallet panel on the right</li>
+                            <li>Click <strong style="color: #f78513;">"Create New Wallet"</strong> to get started</li>
+                        </ol>
+                        <div style="margin-top: 30px;">
+                            <button class="btn btn-primary" onclick="skipToComplete()">Continue</button>
+                        </div>
+                    `;
                 }
             } catch (error) {
-                console.error('Wallet creation error:', error);
-                alert('Wallet creation failed. You can set it up later from the Web3 panel.');
-                skipWallet();
+                console.error('[WelcomeWizard] Error in createWallet:', error);
+                // Show instructions instead of error
+                document.querySelector('#step-wallet .wallet-setup').innerHTML = `
+                    <h3 style="color: #f78513;">Ready to Create Your Wallet!</h3>
+                    <p style="font-size: 16px; margin: 20px 0;">To create your GuapcoinX wallet:</p>
+                    <ol style="text-align: left; font-size: 15px; line-height: 1.8; max-width: 400px; margin: 0 auto;">
+                        <li>Look for the <strong style="color: #f78513;">Web3/GuapcoinX</strong> button in the left sidebar</li>
+                        <li>Click it to open the wallet panel on the right</li>
+                        <li>Click <strong style="color: #f78513;">"Create New Wallet"</strong> to get started</li>
+                    </ol>
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-primary" onclick="skipToComplete()">Continue</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function completeWizard() {
+            // Close the wizard tab
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'closeWizardTab'
+                }, '*');
             }
         }
 

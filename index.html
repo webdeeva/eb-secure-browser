@@ -78,6 +78,12 @@
                     <span class="icon"><i class="fas fa-cube"></i></span>
                     <span class="text">Web3</span>
                 </button>
+                
+                <button id="toggle-passwords" class="sidebar-button">
+                    <span class="icon"><i class="fas fa-key"></i></span>
+                    <span class="text">Passwords</span>
+                </button>
+                
                 <div id="web3-panel" class="panel">
                     <div class="web3-controls">
                         <!-- GuapcoinX Logo -->
@@ -363,6 +369,7 @@
                     </div>
                 </div>
                 
+                
                 <button id="toggle-notifications" class="sidebar-button">
                     <span class="icon">
                         <i class="fas fa-bell"></i>
@@ -442,6 +449,125 @@
     
     <!-- Certificate Error Modal -->
     <div class="cert-error-overlay" id="cert-error-overlay"></div>
+    <!-- Password Manager Right Panel -->
+    <div id="password-right-panel" class="right-panel" style="display: none;">
+        <div class="right-panel-header">
+            <h3>Password Manager</h3>
+            <button id="close-password-panel" class="close-panel-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <iframe id="password-iframe" 
+                src="password-manager.html" 
+                style="width: 100%; height: calc(100% - 50px); border: none; background: #070707;">
+        </iframe>
+    </div>
+    
+    <!-- Web3 Wallet Right Panel -->
+    <div id="web3-right-panel" class="right-panel" style="display: none;">
+        <div class="right-panel-header">
+            <img src="assets/guapxlogo.png" alt="GuapcoinX" style="height: 30px; margin-right: 10px;">
+            <h3 style="flex: 1;">GuapcoinX Wallet</h3>
+            <button id="close-web3-panel" class="close-panel-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="web3-panel-content" class="web3-controls" style="height: calc(100% - 50px); overflow-y: auto; padding: 20px; background: #070707;">
+            <!-- GuapcoinX Logo -->
+            <div class="guapcoinx-logo" style="margin-bottom: 20px;">
+                <img src="assets/guapxlogo.png" alt="GuapcoinX">
+            </div>
+            
+            <!-- Password Lock Screen -->
+            <div id="wallet-locked-section" style="display: none;">
+                <div class="lock-screen">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <h3>Wallet Locked</h3>
+                    <p>Enter your password to unlock</p>
+                    <input type="password" id="unlock-password" placeholder="Enter password">
+                    <button id="unlock-wallet-btn" class="wallet-btn">Unlock Wallet</button>
+                    <div id="unlock-error" class="error-message"></div>
+                    <div class="profile-import-section">
+                        <p>Lost your password?</p>
+                        <button id="import-profile-login-btn" class="wallet-btn">Import Profile</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wallet Setup Screen -->
+            <div id="wallet-setup-section">
+                <button id="create-wallet-right" class="wallet-btn">Create New Wallet</button>
+                <button id="import-wallet" class="wallet-btn">Import Existing Wallet</button>
+                <button id="import-profile-btn" class="wallet-btn">Import Profile</button>
+            </div>
+            
+            <div id="wallet-create-section" style="display: none;">
+                <h3>Create New Wallet</h3>
+                <input type="password" id="wallet-password" placeholder="Enter password">
+                <input type="password" id="wallet-password-confirm" placeholder="Confirm password">
+                <button id="generate-wallet" class="wallet-btn">Generate Wallet</button>
+                <div id="wallet-error" class="error-message"></div>
+            </div>
+            
+            <div id="wallet-import-section" style="display: none;">
+                <h3>Import Wallet</h3>
+                <textarea id="private-key" placeholder="Enter your private key or mnemonic phrase"></textarea>
+                <input type="password" id="import-password" placeholder="Set password for this wallet">
+                <input type="password" id="import-password-confirm" placeholder="Confirm password">
+                <button id="import-wallet-confirm" class="wallet-btn">Import</button>
+                <button id="cancel-import" class="wallet-btn">Cancel</button>
+                <div id="import-error" class="error-message"></div>
+            </div>
+            
+            <div id="profile-import-section" style="display: none;">
+                <h3>Import Profile</h3>
+                <p>Import your wallet profile from a backup file</p>
+                <input type="file" id="profile-file" accept=".json">
+                <button id="import-profile-confirm" class="wallet-btn">Import Profile</button>
+                <button id="cancel-profile-import" class="wallet-btn">Cancel</button>
+                <div id="profile-import-error" class="error-message"></div>
+            </div>
+            
+            <div id="wallet-display" style="display: none;">
+                <div class="wallet-address-container">
+                    <h3>Your Wallet Address</h3>
+                    <div id="wallet-address" class="wallet-address"></div>
+                    <button id="copy-address" class="wallet-btn small-btn">Copy</button>
+                    <button id="refresh-balance" class="wallet-btn small-btn">Refresh</button>
+                </div>
+                <div class="wallet-balance-container">
+                    <h3>Balance</h3>
+                    <div id="wallet-balance" class="wallet-balance">0.0000 GUAP</div>
+                </div>
+                <button id="lock-wallet" class="wallet-btn">Lock Wallet</button>
+                <button id="export-profile" class="wallet-btn">Export Profile</button>
+            </div>
+            
+            <div class="network-settings">
+                <h3>GuapcoinX Network</h3>
+                <div class="network-info">
+                    <div><strong>RPC:</strong> https://rpc-mainnet-2.guapcoinx.com</div>
+                    <div><strong>Chain ID:</strong> 71111</div>
+                    <div><strong>Explorer:</strong> https://explorer.guapcoinx.com</div>
+                </div>
+                <button id="connect-network">Connect to GuapcoinX</button>
+            </div>
+            
+            <div id="transaction-section" style="display: none;">
+                <h3>Send Transaction</h3>
+                <div class="send-to-container">
+                    <input type="text" id="send-to" placeholder="Address or domain (e.g. aquarius.guap)">
+                    <div id="domain-resolution-status" class="domain-status"></div>
+                    <div id="resolved-address" class="resolved-address" style="display: none;">
+                        <small>Resolved to: <span id="resolved-address-text"></span></small>
+                    </div>
+                </div>
+                <input type="number" id="send-amount" placeholder="Amount (GUAP)" step="0.0001">
+                <button id="send-transaction" class="wallet-btn">Send</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="cert-error-modal" id="cert-error-modal">
         <div class="cert-error-header">
             <div class="cert-error-icon">⚠️</div>

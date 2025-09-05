@@ -25,6 +25,15 @@
       "panel": "web3-panel"
     },
     {
+      "id": "passwords",
+      "enabled": true,
+      "text": "Passwords",
+      "icon": "fas fa-key",
+      "action": "panel",
+      "panel": "password-panel",
+      "tooltip": "Secure Password Manager"
+    },
+    {
       "id": "notifications",
       "enabled": true,
       "text": "Notifications",

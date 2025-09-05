@@ -5,11 +5,14 @@ const Store = require('electron-store');
 const WalletManager = require('./wallet');
 const PasswordManager = require('./passwordManager');
 const EBDomainResolver = require('./domain-resolver');
+const PasswordVault = require('./password-manager/main/passwordManager'); // Our secure password vault
 
 // Initialize stores immediately but they'll be re-initialized after app is ready
 let store = new Store();
 let walletManager = new WalletManager();
 let passwordManager = new PasswordManager();
+let passwordVault = null; // Initialize after app is ready
+let vaultManager = null; // Password vault - will be initialized after app is ready
 let domainResolver = null; // Will be initialized after app is ready
 
 // Set application name
@@ -755,10 +758,20 @@ ipcMain.handle('download-file', async (event, { content, filename }) => {
     }
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     reinitializeStores();
     loadCertificateWhitelist();
     loadConnectedDomains();
+    
+    // Initialize password vault manager
+    try {
+        passwordVault = new PasswordVault();
+        await passwordVault.initialize();
+        console.log('Password vault manager initialized');
+    } catch (error) {
+        console.error('Failed to initialize password vault:', error);
+        // Continue without password vault if it fails
+    }
     
     // Initialize domain resolver
     domainResolver = new EBDomainResolver();
