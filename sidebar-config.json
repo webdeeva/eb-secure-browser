@@ -66,6 +66,24 @@
       "url": "https://pass.everythingblack.xyz"
     },
     {
+      "id": "vr",
+      "enabled": true,
+      "text": "VR World Builder",
+      "icon": "fas fa-vr-cardboard",
+      "action": "maintenance",
+      "maintenanceMessage": "VR World Builder - Coming Soon!",
+      "maintenanceSubMessage": "Build and explore virtual worlds. Launching Q4 2025."
+    },
+    {
+      "id": "wiki",
+      "enabled": true,
+      "text": "EB Wiki",
+      "icon": "fas fa-book",
+      "action": "maintenance",
+      "maintenanceMessage": "EB Wiki - Coming Soon!",
+      "maintenanceSubMessage": "Community-driven knowledge base. Launching Q3 2025."
+    },
+    {
       "id": "resources",
       "enabled": false,
       "text": "Resources",

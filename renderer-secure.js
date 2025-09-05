@@ -263,8 +263,15 @@ class SecureBrowser {
         await this.loadHistory();
         await this.loadSidebarConfig();
         
-        // Create first tab
-        this.createTab('landing.html'); // Load landing page instead of external URL
+        // Check if this is the first time running the browser
+        const wizardCompleted = localStorage.getItem('wizardCompleted');
+        if (!wizardCompleted) {
+            // First time user - show the welcome wizard
+            this.createTab('welcome-wizard.html');
+        } else {
+            // Returning user - show landing page
+            this.createTab('landing.html');
+        }
         
         console.log('[SecureBrowser] Secure browser initialized');
     }
