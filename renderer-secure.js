@@ -264,10 +264,18 @@ class SecureBrowser {
         await this.loadSidebarConfig();
         
         // Check if this is the first time running the browser
+        // DEV MODE: Force show wizard for testing
+        const isDev = true; // Set to false for production
         const wizardCompleted = localStorage.getItem('wizardCompleted');
-        if (!wizardCompleted) {
-            // First time user - show the welcome wizard
+        
+        if (isDev || !wizardCompleted) {
+            // Dev mode or first time user - show the welcome wizard
             this.createTab('welcome-wizard.html');
+            
+            // Add a dev mode indicator
+            if (isDev) {
+                console.log('[DEV MODE] Forcing welcome wizard display for testing');
+            }
         } else {
             // Returning user - show landing page
             this.createTab('landing.html');

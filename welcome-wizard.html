@@ -273,9 +273,66 @@
             z-index: -1;
             opacity: 0.3;
         }
+
+        /* Dev mode styles */
+        .dev-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #ff6b00, #ff9500);
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10000;
+            display: none;
+        }
+
+        .dev-controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #ff6b00;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 10000;
+            display: none;
+        }
+
+        .dev-controls button {
+            padding: 5px 10px;
+            background: #ff6b00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 11px;
+        }
+
+        .dev-controls button:hover {
+            background: #ff9500;
+        }
     </style>
 </head>
 <body>
+    <!-- Dev Mode Banner -->
+    <div class="dev-banner" id="devBanner">
+        🔧 DEV MODE - Welcome Wizard Testing
+    </div>
+
+    <!-- Dev Controls -->
+    <div class="dev-controls" id="devControls">
+        <div style="color: #ff6b00; font-size: 10px; margin-bottom: 5px;">Dev Tools</div>
+        <button onclick="resetWizard()">Reset Wizard</button>
+        <button onclick="skipToStep(4)">Skip to Business</button>
+        <button onclick="skipToStep(5)">Skip to Wallet</button>
+        <button onclick="clearAllData()">Clear All Data</button>
+    </div>
+
     <canvas id="particle-canvas"></canvas>
     
     <div class="wizard-container">
@@ -527,6 +584,17 @@
     </div>
 
     <script>
+        // Check if we're in dev mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDev = urlParams.get('dev') === 'true' || localStorage.getItem('devMode') === 'true';
+        
+        // Enable dev mode UI if in dev mode
+        if (isDev) {
+            document.getElementById('devBanner').style.display = 'block';
+            document.getElementById('devControls').style.display = 'block';
+            console.log('🔧 DEV MODE ENABLED - Welcome Wizard Testing');
+        }
+        
         let currentStep = 0;
         const steps = [
             'step-welcome',
@@ -542,6 +610,27 @@
         let walletMnemonic = '';
         let businessInfo = {};
         let skipBusinessStep = false;
+
+        // Dev mode functions
+        function resetWizard() {
+            currentStep = 0;
+            showStep(0);
+            localStorage.removeItem('wizardCompleted');
+            localStorage.removeItem('pendingBusinessSubmission');
+            console.log('✅ Wizard reset');
+        }
+
+        function skipToStep(stepIndex) {
+            currentStep = stepIndex;
+            showStep(stepIndex);
+        }
+
+        function clearAllData() {
+            localStorage.clear();
+            console.log('✅ All localStorage data cleared');
+            alert('All data cleared! Refreshing...');
+            window.location.reload();
+        }
 
         // Particle animation
         const canvas = document.getElementById('particle-canvas');
@@ -685,8 +774,13 @@
         }
 
         async function finishSetup() {
-            // Mark as not first time
-            localStorage.setItem('wizardCompleted', 'true');
+            // In dev mode, don't permanently save completion
+            if (!isDev) {
+                // Mark as not first time (production only)
+                localStorage.setItem('wizardCompleted', 'true');
+            } else {
+                console.log('🔧 DEV MODE: Not saving wizard completion');
+            }
             
             // Check if we need to redirect to business submission
             const pendingBusiness = localStorage.getItem('pendingBusinessSubmission');
