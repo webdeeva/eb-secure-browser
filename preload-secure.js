@@ -676,6 +676,19 @@ contextBridge.exposeInMainWorld('ebAPI', ebAPI);
 
 // Also expose password manager API (for iframe)
 contextBridge.exposeInMainWorld('electronAPI', {
+    // Window control methods
+    send: (channel, data) => {
+        const validChannels = ['window-control', 'open-external'];
+        if (validChannels.includes(channel)) {
+            ipcRenderer.send(channel, data);
+        }
+    },
+    on: (channel, func) => {
+        const validChannels = ['window-maximized'];
+        if (validChannels.includes(channel)) {
+            ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
+        }
+    },
     passwordManager: {
         // Master password operations
         hasMasterPassword: () => ipcRenderer.invoke('pm-has-master-password'),

@@ -327,6 +327,12 @@ function createWindow() {
                 { 
                     label: 'Inspect Element', 
                     click: () => {
+                        // For webviews, open their own dev tools to inspect web content only
+                        if (contents.getType() === 'webview') {
+                            contents.openDevTools();
+                            return;
+                        }
+                        
                         const openDevToolsWithFocus = () => {
                             // Open DevTools detached for better window control
                             contents.openDevTools({ mode: 'detach', activate: true });
@@ -487,8 +493,8 @@ function createWindow() {
         app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
     }
 
-    // Open DevTools for debugging
-    mainWindow.webContents.openDevTools();
+    // DevTools will only open when user explicitly requests via inspect or dev tools button
+    // mainWindow.webContents.openDevTools(); // Disabled auto-open
     
     mainWindow.loadFile('index.html');
     
@@ -949,7 +955,9 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     const autoAllowDomains = [
         'chat.everythingblack.xyz',
         'www.sheinteractive.com',
-        'sheinteractive.com'
+        'sheinteractive.com',
+        'everythingblack.info',
+        'www.everythingblack.info'
     ];
     
     if (autoAllowDomains.includes(hostname)) {
@@ -1072,7 +1080,15 @@ ipcMain.handle('wallet-generate', async (event) => {
         
         const wallet = walletManager.generateWallet();
         walletManager.saveWallet(wallet);
-        return { success: true, wallet: { address: wallet.address } }; // Only return address
+        // Return full wallet info including mnemonic for initial display
+        // User must back this up as it won't be shown again
+        return { 
+            success: true, 
+            wallet: { 
+                address: wallet.address,
+                mnemonic: wallet.mnemonic // Show ONCE for backup
+            } 
+        };
     } catch (error) {
         return { success: false, error: error.message };
     }
@@ -1230,6 +1246,66 @@ ipcMain.handle('wallet-send-transaction', async (event, txData) => {
             const tx = await walletManager.wallet.sendTransaction(txData);
             return tx.hash; // Return hash directly for dApp compatibility
         }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Token handlers
+ipcMain.handle('wallet-import-token', async (event, contractAddress) => {
+    try {
+        // Validate input
+        if (!contractAddress || typeof contractAddress !== 'string') {
+            return { success: false, error: 'Invalid contract address' };
+        }
+        
+        // Import the token
+        const tokenData = await walletManager.importToken(contractAddress);
+        return { success: true, token: tokenData };
+    } catch (error) {
+        console.error('Token import error:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('wallet-validate-token', async (event, contractAddress) => {
+    try {
+        // Validate input
+        if (!contractAddress || typeof contractAddress !== 'string') {
+            return { success: false, error: 'Invalid contract address' };
+        }
+        
+        // Validate the token contract
+        const tokenData = await walletManager.validateTokenContract(contractAddress);
+        return { success: true, token: tokenData };
+    } catch (error) {
+        console.error('Token validation error:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('wallet-get-tokens', async () => {
+    try {
+        const tokens = walletManager.getTokens();
+        return { success: true, tokens };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('wallet-get-token-balance', async (event, tokenAddress) => {
+    try {
+        const balance = await walletManager.getTokenBalance(tokenAddress);
+        return { success: true, balance };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('wallet-remove-token', async (event, tokenAddress) => {
+    try {
+        const tokens = walletManager.removeToken(tokenAddress);
+        return { success: true, tokens };
     } catch (error) {
         return { success: false, error: error.message };
     }

@@ -1058,6 +1058,9 @@ class SecureBrowser {
     async setupWeb3Panel() {
         console.log('[SecureBrowser] Setting up Web3 panel...');
         
+        // Set up right panel wallet button event listeners
+        this.setupRightPanelWalletButtons();
+        
         // Check if password exists
         const hasPassword = await ebAPI.password.checkExists();
         console.log('[Web3Panel] Has password:', hasPassword);
@@ -1077,16 +1080,137 @@ class SecureBrowser {
         }
     }
     
+    setupRightPanelWalletButtons() {
+        console.log('[SecureBrowser] Setting up right panel wallet button handlers...');
+        
+        // Main wallet setup buttons
+        const createWalletRightBtn = document.getElementById('create-wallet-right');
+        const importWalletBtn = document.getElementById('import-wallet');
+        const importProfileBtn = document.getElementById('import-profile-btn');
+        
+        // Wallet creation section buttons
+        const generateWalletBtn = document.getElementById('generate-wallet');
+        
+        // Wallet import section buttons
+        const importWalletConfirmBtn = document.getElementById('import-wallet-confirm');
+        const cancelImportBtn = document.getElementById('cancel-import');
+        
+        // Profile import section buttons
+        const importProfileConfirmBtn = document.getElementById('import-profile-confirm');
+        const cancelProfileImportBtn = document.getElementById('cancel-profile-import');
+        
+        // Wallet display buttons
+        const copyAddressBtn = document.getElementById('right-copy-address');
+        const refreshBalanceBtn = document.getElementById('right-refresh-balance');
+        const lockWalletBtn = document.getElementById('lock-wallet');
+        const exportProfileBtn = document.getElementById('export-profile');
+        
+        // Set up event listeners
+        if (createWalletRightBtn) {
+            createWalletRightBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Create wallet button clicked');
+                this.showCreateWalletSection();
+            });
+        }
+        
+        if (importWalletBtn) {
+            importWalletBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Import wallet button clicked');
+                this.showImportWalletSection();
+            });
+        }
+        
+        if (importProfileBtn) {
+            importProfileBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Import profile button clicked');
+                this.showImportProfileSection();
+            });
+        }
+        
+        if (generateWalletBtn) {
+            generateWalletBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Generate wallet button clicked');
+                this.handleGenerateWallet();
+            });
+        }
+        
+        if (importWalletConfirmBtn) {
+            importWalletConfirmBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Import wallet confirm button clicked');
+                this.handleImportWallet();
+            });
+        }
+        
+        if (cancelImportBtn) {
+            cancelImportBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Cancel import button clicked');
+                this.hideAllWalletSections();
+                this.showWalletSetup();
+            });
+        }
+        
+        if (importProfileConfirmBtn) {
+            importProfileConfirmBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Import profile confirm button clicked');
+                this.handleImportProfile();
+            });
+        }
+        
+        if (cancelProfileImportBtn) {
+            cancelProfileImportBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Cancel profile import button clicked');
+                this.hideAllWalletSections();
+                this.showWalletSetup();
+            });
+        }
+        
+        if (copyAddressBtn) {
+            copyAddressBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Copy address button clicked');
+                this.copyWalletAddress();
+            });
+        }
+        
+        if (refreshBalanceBtn) {
+            refreshBalanceBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Refresh balance button clicked');
+                this.refreshWalletBalance();
+            });
+        }
+        
+        if (lockWalletBtn) {
+            lockWalletBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Lock wallet button clicked');
+                this.lockWallet();
+            });
+        }
+        
+        if (exportProfileBtn) {
+            exportProfileBtn.addEventListener('click', () => {
+                console.log('[RightPanel] Export profile button clicked');
+                this.exportProfile();
+            });
+        }
+    }
+    
     showWalletSetup() {
+        // Hide all sections first
+        this.hideAllWalletSections();
+        
+        // Show the right panel wallet setup section
         const walletSection = document.getElementById('wallet-setup-section');
+        if (walletSection) {
+            walletSection.style.display = 'block';
+        }
+        
+        // Hide the old left panel sections if they exist
         const lockedSection = document.getElementById('wallet-locked-section');
         const interfaceSection = document.getElementById('wallet-interface-section');
         
-        if (walletSection) walletSection.style.display = 'block';
         if (lockedSection) lockedSection.style.display = 'none';
         if (interfaceSection) interfaceSection.style.display = 'none';
         
-        // Set up wallet creation buttons
+        // Set up wallet creation buttons (for compatibility with existing left panel)
         const createBtn = document.getElementById('create-wallet-btn');
         const restoreBtn = document.getElementById('restore-wallet-btn');
         
@@ -1115,7 +1239,7 @@ class SecureBrowser {
         }
     }
     
-    async showWalletInterface() {
+    async showWalletInterface(newWallet = null) {
         const walletSection = document.getElementById('wallet-setup-section');
         const lockedSection = document.getElementById('wallet-locked-section');
         const interfaceSection = document.getElementById('wallet-interface-section');
@@ -1124,11 +1248,60 @@ class SecureBrowser {
         if (lockedSection) lockedSection.style.display = 'none';
         if (interfaceSection) interfaceSection.style.display = 'block';
         
+        // If this is a new wallet creation, show the seed phrase
+        if (newWallet && newWallet.mnemonic) {
+            this.showSeedPhrase(newWallet.mnemonic);
+            // Also display the address immediately
+            const addressEl = document.getElementById('wallet-address');
+            if (addressEl && newWallet.address) {
+                addressEl.textContent = newWallet.address;
+            }
+        }
+        
         // Load wallet data
         await this.loadWalletData();
         
         // Set up interface buttons
         this.setupWalletInterfaceButtons();
+    }
+    
+    showSeedPhrase(mnemonic) {
+        const seedSection = document.getElementById('seed-phrase-section');
+        const seedDisplay = document.getElementById('seed-phrase-display');
+        
+        if (seedSection && seedDisplay) {
+            // Display the mnemonic phrase
+            seedDisplay.textContent = mnemonic;
+            seedSection.style.display = 'block';
+            
+            // Set up seed phrase buttons
+            const copyBtn = document.getElementById('copy-seed-phrase');
+            const confirmBtn = document.getElementById('confirm-seed-backup');
+            
+            if (copyBtn) {
+                copyBtn.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(mnemonic);
+                        if (modalSystem) {
+                            await modalSystem.alert('Seed phrase copied to clipboard. Keep it safe!');
+                        }
+                    } catch (error) {
+                        console.error('Failed to copy seed phrase:', error);
+                    }
+                };
+            }
+            
+            if (confirmBtn) {
+                confirmBtn.onclick = () => {
+                    seedSection.style.display = 'none';
+                    // Clear the mnemonic from memory
+                    seedDisplay.textContent = '';
+                    if (modalSystem) {
+                        modalSystem.alert('Great! Your wallet is ready to use. Remember to keep your seed phrase safe!');
+                    }
+                };
+            }
+        }
     }
     
     async createWallet() {
@@ -1161,8 +1334,8 @@ class SecureBrowser {
                 return;
             }
             
-            await modalSystem.alert('Wallet created successfully! Make sure to back up your seed phrase.');
-            await this.showWalletInterface();
+            // Show wallet interface with seed phrase
+            await this.showWalletInterface(walletResult.wallet);
             
         } catch (error) {
             console.error('[Web3Panel] Create wallet error:', error);
@@ -1247,6 +1420,9 @@ class SecureBrowser {
     
     async loadWalletData() {
         try {
+            // Auto-connect to GuapcoinX network first
+            await this.connectToGuapcoinX();
+            
             // Load wallet
             const walletResult = await ebAPI.wallet.load();
             if (walletResult.success && walletResult.wallet) {
@@ -1270,10 +1446,47 @@ class SecureBrowser {
         }
     }
     
+    async connectToGuapcoinX() {
+        try {
+            console.log('[Web3Panel] Auto-connecting to GuapcoinX network...');
+            const result = await ebAPI.wallet.connectNetwork(
+                'https://rpc-mainnet.guapcoinx.com', // Primary RPC
+                71111,
+                'https://rpc-mainnet-2.guapcoinx.com' // Fallback RPC
+            );
+            
+            if (result.success) {
+                console.log('[Web3Panel] Successfully connected to GuapcoinX network');
+                // Update button text to show connected status for both panels
+                const connectBtn = document.getElementById('connect-network');
+                const rightConnectBtn = document.getElementById('right-connect-network');
+                
+                if (connectBtn) {
+                    connectBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected to GuapcoinX';
+                    connectBtn.disabled = true;
+                }
+                if (rightConnectBtn) {
+                    rightConnectBtn.innerHTML = '<i class="fas fa-check-circle"></i> Connected to GuapcoinX';
+                    rightConnectBtn.disabled = true;
+                }
+            } else {
+                console.error('[Web3Panel] Failed to connect to GuapcoinX:', result.error);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('[Web3Panel] Network connection error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
     setupWalletInterfaceButtons() {
         const sendBtn = document.getElementById('send-btn');
         const lockBtn = document.getElementById('lock-wallet-btn');
         const settingsBtn = document.getElementById('wallet-settings-btn');
+        const connectBtn = document.getElementById('connect-network');
+        const copyAddressBtn = document.getElementById('copy-address');
+        const refreshBalanceBtn = document.getElementById('refresh-balance');
         
         if (sendBtn) {
             sendBtn.onclick = () => this.showSendDialog();
@@ -1286,6 +1499,84 @@ class SecureBrowser {
         if (settingsBtn) {
             settingsBtn.onclick = () => this.showWalletSettings();
         }
+        
+        // Setup copy address button
+        if (copyAddressBtn) {
+            copyAddressBtn.onclick = async () => {
+                const addressEl = document.getElementById('wallet-address');
+                if (addressEl && addressEl.textContent) {
+                    try {
+                        await navigator.clipboard.writeText(addressEl.textContent);
+                        if (modalSystem) {
+                            await modalSystem.alert('Address copied to clipboard!');
+                        }
+                    } catch (error) {
+                        console.error('[Web3Panel] Failed to copy address:', error);
+                    }
+                }
+            };
+        }
+        
+        // Setup refresh balance button
+        if (refreshBalanceBtn) {
+            refreshBalanceBtn.onclick = async () => {
+                await this.loadWalletData();
+            };
+        }
+        
+        // Setup connect to network button (manual connection if needed)
+        if (connectBtn) {
+            connectBtn.onclick = async () => {
+                console.log('[Web3Panel] Manual network connection requested');
+                const result = await this.connectToGuapcoinX();
+                if (result.success && modalSystem) {
+                    await modalSystem.alert('Connected to GuapcoinX network!');
+                } else if (!result.success && modalSystem) {
+                    await modalSystem.alert('Failed to connect: ' + result.error);
+                }
+            };
+        }
+        
+        // Also setup right panel connect button
+        const rightConnectBtn = document.getElementById('right-connect-network');
+        if (rightConnectBtn) {
+            rightConnectBtn.onclick = async () => {
+                console.log('[Web3Panel] Manual network connection requested from right panel');
+                const result = await this.connectToGuapcoinX();
+                if (result.success && modalSystem) {
+                    await modalSystem.alert('Connected to GuapcoinX network!');
+                } else if (!result.success && modalSystem) {
+                    await modalSystem.alert('Failed to connect: ' + result.error);
+                }
+            };
+        }
+        
+        // Setup import token buttons (both left and right panels)
+        const importTokenBtn = document.getElementById('import-token-btn');
+        const rightImportTokenBtn = document.getElementById('right-panel-import-token-btn');
+        
+        if (importTokenBtn) {
+            console.log('[Web3Panel] Setting up import token button');
+            importTokenBtn.onclick = () => {
+                console.log('[Web3Panel] Import token button clicked');
+                this.showImportTokenDialog();
+            };
+        } else {
+            console.log('[Web3Panel] Import token button not found!');
+        }
+        
+        if (rightImportTokenBtn) {
+            console.log('[Web3Panel] Setting up right panel import token button');
+            rightImportTokenBtn.onclick = () => {
+                console.log('[Web3Panel] Right panel import token button clicked');
+                this.showImportTokenDialog();
+            };
+        } else {
+            console.log('[Web3Panel] Right panel import token button not found!');
+        }
+        
+        // Load and display tokens
+        this.loadTokenList();
     }
     
     async showSendDialog() {
@@ -1326,6 +1617,666 @@ class SecureBrowser {
     showWalletSettings() {
         // Show wallet settings dialog
         console.log('[Web3Panel] Show wallet settings...');
+    }
+    
+    // ==========================================
+    // TOKEN MANAGEMENT
+    // ==========================================
+    async showImportTokenDialog() {
+        const modal = document.getElementById('import-token-modal');
+        const contractInput = document.getElementById('token-contract-address');
+        const errorDiv = document.getElementById('token-import-error');
+        const loadingDiv = document.getElementById('token-import-loading');
+        const previewDiv = document.getElementById('token-info-preview');
+        const confirmBtn = document.getElementById('confirm-import-token');
+        const cancelBtn = document.getElementById('cancel-import-token');
+        
+        if (!modal || !contractInput || !confirmBtn || !cancelBtn) {
+            console.error('[Web3Panel] Import token modal elements not found');
+            if (modalSystem) {
+                await modalSystem.alert('Token import feature is not available');
+            }
+            return;
+        }
+        
+        // Reset modal state
+        contractInput.value = '';
+        if (errorDiv) errorDiv.style.display = 'none';
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (previewDiv) previewDiv.style.display = 'none';
+        confirmBtn.disabled = true;
+        
+        // Show modal
+        modal.style.display = 'flex';
+        contractInput.focus();
+        
+        let currentTokenData = null;
+        
+        // Validate address on input
+        const validateAddress = async () => {
+            const address = contractInput.value.trim();
+            
+            // Hide previous states
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (previewDiv) previewDiv.style.display = 'none';
+            confirmBtn.disabled = true;
+            currentTokenData = null;
+            
+            if (!address) return;
+            
+            // Check address format
+            if (!address.startsWith('0x') || address.length !== 42) {
+                if (errorDiv) {
+                    errorDiv.textContent = 'Invalid address format. Must be 42 characters starting with 0x';
+                    errorDiv.style.display = 'block';
+                }
+                return;
+            }
+            
+            try {
+                // Show loading
+                if (loadingDiv) loadingDiv.style.display = 'block';
+                
+                // Validate the token
+                const validateResult = await ebAPI.token.validate(address);
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                
+                if (!validateResult.success) {
+                    if (errorDiv) {
+                        errorDiv.textContent = validateResult.error || 'Failed to validate token contract';
+                        errorDiv.style.display = 'block';
+                    }
+                    return;
+                }
+                
+                // Show token preview
+                const token = validateResult.token;
+                currentTokenData = token;
+                
+                if (previewDiv) {
+                    const nameSpan = document.getElementById('token-preview-name');
+                    const symbolSpan = document.getElementById('token-preview-symbol');
+                    const decimalsSpan = document.getElementById('token-preview-decimals');
+                    
+                    if (nameSpan) nameSpan.textContent = token.name || 'Unknown';
+                    if (symbolSpan) symbolSpan.textContent = token.symbol || 'Unknown';
+                    if (decimalsSpan) decimalsSpan.textContent = token.decimals || '0';
+                    
+                    previewDiv.style.display = 'block';
+                }
+                
+                confirmBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('[Web3Panel] Token validation error:', error);
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                if (errorDiv) {
+                    errorDiv.textContent = 'Error validating token: ' + error.message;
+                    errorDiv.style.display = 'block';
+                }
+            }
+        };
+        
+        // Add input listener with debounce
+        let validationTimeout = null;
+        contractInput.addEventListener('input', () => {
+            if (validationTimeout) {
+                clearTimeout(validationTimeout);
+            }
+            validationTimeout = setTimeout(validateAddress, 500);
+        });
+        
+        // Handle confirm button
+        const handleConfirm = async () => {
+            if (!currentTokenData || !contractInput.value.trim()) return;
+            
+            try {
+                confirmBtn.disabled = true;
+                if (loadingDiv) {
+                    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing token...';
+                    loadingDiv.style.display = 'block';
+                }
+                
+                const importResult = await ebAPI.token.import(contractInput.value.trim());
+                
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                modal.style.display = 'none';
+                
+                if (importResult.success) {
+                    if (modalSystem) {
+                        await modalSystem.alert(`Token ${currentTokenData.symbol} imported successfully!`);
+                    }
+                    // Reload token list
+                    await this.loadTokenList();
+                } else {
+                    if (modalSystem) {
+                        await modalSystem.alert('Failed to import token: ' + importResult.error);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('[Web3Panel] Import token error:', error);
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                if (modalSystem) {
+                    await modalSystem.alert('Error importing token: ' + error.message);
+                }
+            } finally {
+                confirmBtn.disabled = false;
+            }
+        };
+        
+        // Handle cancel button
+        const handleCancel = () => {
+            modal.style.display = 'none';
+        };
+        
+        // Add event listeners
+        confirmBtn.onclick = handleConfirm;
+        cancelBtn.onclick = handleCancel;
+        
+        // Handle Enter key in input
+        contractInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !confirmBtn.disabled) {
+                handleConfirm();
+            }
+        });
+        
+        // Handle Escape key to close modal
+        const handleKeyPress = (e) => {
+            if (e.key === 'Escape') {
+                handleCancel();
+                document.removeEventListener('keydown', handleKeyPress);
+            }
+        };
+        document.addEventListener('keydown', handleKeyPress);
+        
+        // Clean up event listeners when modal closes
+        const originalDisplay = modal.style.display;
+        const checkModalClosed = () => {
+            if (modal.style.display === 'none') {
+                document.removeEventListener('keydown', handleKeyPress);
+                if (validationTimeout) {
+                    clearTimeout(validationTimeout);
+                }
+                return;
+            }
+            setTimeout(checkModalClosed, 100);
+        };
+        checkModalClosed();
+    }
+    
+    async loadTokenList() {
+        try {
+            const result = await ebAPI.token.get();
+            if (result.success && result.tokens) {
+                this.displayTokens(result.tokens);
+            }
+        } catch (error) {
+            console.error('[Web3Panel] Load tokens error:', error);
+        }
+    }
+    
+    displayTokens(tokens) {
+        const tokenList = document.getElementById('token-list');
+        if (!tokenList) return;
+        
+        if (!tokens || tokens.length === 0) {
+            tokenList.innerHTML = '<div style="color: #888; padding: 10px;">No tokens imported yet</div>';
+            return;
+        }
+        
+        tokenList.innerHTML = '';
+        
+        tokens.forEach(token => {
+            const tokenItem = document.createElement('div');
+            tokenItem.className = 'token-item';
+            tokenItem.style.cssText = 'background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;';
+            
+            tokenItem.innerHTML = `
+                <div>
+                    <div style="font-weight: bold; color: #ff6c2f;">${token.symbol}</div>
+                    <div style="font-size: 12px; color: #888;">${token.name}</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 5px;">${token.address.substring(0, 10)}...${token.address.substring(32)}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="token-balance" data-address="${token.address}" style="color: #fff; margin-bottom: 5px;">Loading...</div>
+                    <button class="remove-token-btn" data-address="${token.address}" style="background: #ff3333; color: #fff; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+            
+            tokenList.appendChild(tokenItem);
+            
+            // Load token balance
+            this.loadTokenBalance(token.address);
+        });
+        
+        // Setup remove buttons
+        const removeButtons = tokenList.querySelectorAll('.remove-token-btn');
+        removeButtons.forEach(btn => {
+            btn.onclick = () => this.removeToken(btn.dataset.address);
+        });
+    }
+    
+    async loadTokenBalance(tokenAddress) {
+        try {
+            const result = await ebAPI.token.getBalance(tokenAddress);
+            if (result.success) {
+                const balanceEl = document.querySelector(`.token-balance[data-address="${tokenAddress}"]`);
+                if (balanceEl) {
+                    balanceEl.textContent = parseFloat(result.balance).toFixed(4);
+                }
+            }
+        } catch (error) {
+            console.error('[Web3Panel] Load token balance error:', error);
+        }
+    }
+    
+    async removeToken(tokenAddress) {
+        if (!modalSystem) return;
+        
+        const confirmed = await modalSystem.confirm('Are you sure you want to remove this token?');
+        if (!confirmed) return;
+        
+        try {
+            const result = await ebAPI.token.remove(tokenAddress);
+            if (result.success) {
+                await this.loadTokenList();
+            } else {
+                await modalSystem.alert('Failed to remove token: ' + result.error);
+            }
+        } catch (error) {
+            console.error('[Web3Panel] Remove token error:', error);
+            await modalSystem.alert('Error removing token: ' + error.message);
+        }
+    }
+    
+    // ==========================================
+    // RIGHT PANEL WALLET SECTION MANAGEMENT
+    // ==========================================
+    hideAllWalletSections() {
+        const sections = [
+            'wallet-setup-section',
+            'wallet-create-section', 
+            'wallet-import-section',
+            'profile-import-section',
+            'wallet-display'
+        ];
+        
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'none';
+            }
+        });
+    }
+    
+    showCreateWalletSection() {
+        this.hideAllWalletSections();
+        const createSection = document.getElementById('wallet-create-section');
+        if (createSection) {
+            createSection.style.display = 'block';
+        }
+    }
+    
+    showImportWalletSection() {
+        this.hideAllWalletSections();
+        const importSection = document.getElementById('wallet-import-section');
+        if (importSection) {
+            importSection.style.display = 'block';
+        }
+    }
+    
+    showImportProfileSection() {
+        this.hideAllWalletSections();
+        const profileSection = document.getElementById('profile-import-section');
+        if (profileSection) {
+            profileSection.style.display = 'block';
+        }
+    }
+    
+    showWalletDisplaySection() {
+        this.hideAllWalletSections();
+        const displaySection = document.getElementById('wallet-display');
+        if (displaySection) {
+            displaySection.style.display = 'block';
+        }
+    }
+    
+    showRightPanelSeedPhrase(mnemonic) {
+        const seedSection = document.getElementById('right-panel-seed-phrase-section');
+        const seedDisplay = document.getElementById('right-panel-seed-phrase-display');
+        
+        if (seedSection && seedDisplay) {
+            // Display the mnemonic phrase
+            seedDisplay.textContent = mnemonic;
+            seedSection.style.display = 'block';
+            
+            // Set up seed phrase buttons
+            const copyBtn = document.getElementById('right-panel-copy-seed-phrase');
+            const confirmBtn = document.getElementById('right-panel-confirm-seed-backup');
+            
+            if (copyBtn) {
+                copyBtn.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(mnemonic);
+                        if (modalSystem) {
+                            await modalSystem.alert('Seed phrase copied to clipboard. Keep it safe!');
+                        }
+                    } catch (error) {
+                        console.error('Failed to copy seed phrase:', error);
+                    }
+                };
+            }
+            
+            if (confirmBtn) {
+                confirmBtn.onclick = () => {
+                    seedSection.style.display = 'none';
+                    // Clear the mnemonic from memory
+                    seedDisplay.textContent = '';
+                    if (modalSystem) {
+                        modalSystem.alert('Great! Your wallet is ready to use. Remember to keep your seed phrase safe!');
+                    }
+                };
+            }
+        }
+    }
+    
+    
+    // ==========================================
+    // RIGHT PANEL WALLET ACTION HANDLERS
+    // ==========================================
+    async handleGenerateWallet() {
+        const passwordInput = document.getElementById('wallet-password');
+        const confirmInput = document.getElementById('wallet-password-confirm');
+        const errorDiv = document.getElementById('wallet-error');
+        
+        if (!passwordInput || !confirmInput || !errorDiv) {
+            console.error('[RightPanel] Required elements not found for wallet generation');
+            return;
+        }
+        
+        const password = passwordInput.value;
+        const confirmPassword = confirmInput.value;
+        
+        // Clear previous errors
+        errorDiv.textContent = '';
+        
+        // Validate inputs
+        if (!password || password.length < 8) {
+            errorDiv.textContent = 'Password must be at least 8 characters long';
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match';
+            return;
+        }
+        
+        try {
+            // Set password first
+            const passwordResult = await ebAPI.password.set(password);
+            if (!passwordResult.success) {
+                errorDiv.textContent = 'Error setting password: ' + passwordResult.error;
+                return;
+            }
+            
+            // Generate wallet
+            const walletResult = await ebAPI.wallet.generate();
+            if (!walletResult.success) {
+                errorDiv.textContent = 'Error creating wallet: ' + walletResult.error;
+                return;
+            }
+            
+            // Show wallet display section
+            this.showWalletDisplaySection();
+            
+            // Display seed phrase if returned (only on initial creation)
+            if (walletResult.wallet && walletResult.wallet.mnemonic) {
+                this.showRightPanelSeedPhrase(walletResult.wallet.mnemonic);
+            }
+            
+            // Display wallet address immediately
+            if (walletResult.wallet && walletResult.wallet.address) {
+                const addressEl = document.getElementById('right-wallet-address');
+                if (addressEl) {
+                    addressEl.textContent = walletResult.wallet.address;
+                }
+            }
+            
+            // Load balance and other data
+            await this.loadRightPanelWalletData();
+            
+        } catch (error) {
+            console.error('[RightPanel] Generate wallet error:', error);
+            errorDiv.textContent = 'Error creating wallet: ' + error.message;
+        }
+    }
+    
+    async handleImportWallet() {
+        const privateKeyInput = document.getElementById('private-key');
+        const passwordInput = document.getElementById('import-password');
+        const confirmInput = document.getElementById('import-password-confirm');
+        const errorDiv = document.getElementById('import-error');
+        
+        if (!privateKeyInput || !passwordInput || !confirmInput || !errorDiv) {
+            console.error('[RightPanel] Required elements not found for wallet import');
+            return;
+        }
+        
+        const privateKey = privateKeyInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmInput.value;
+        
+        // Clear previous errors
+        errorDiv.textContent = '';
+        
+        // Validate inputs
+        if (!privateKey) {
+            errorDiv.textContent = 'Please enter a private key or mnemonic phrase';
+            return;
+        }
+        
+        if (!password || password.length < 8) {
+            errorDiv.textContent = 'Password must be at least 8 characters long';
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match';
+            return;
+        }
+        
+        try {
+            // Set password first
+            const passwordResult = await ebAPI.password.set(password);
+            if (!passwordResult.success) {
+                errorDiv.textContent = 'Error setting password: ' + passwordResult.error;
+                return;
+            }
+            
+            // Import wallet
+            const walletResult = await ebAPI.wallet.restore(privateKey);
+            if (!walletResult.success) {
+                errorDiv.textContent = 'Error importing wallet: ' + walletResult.error;
+                return;
+            }
+            
+            // Show success and wallet display
+            if (modalSystem) {
+                await modalSystem.alert('Wallet imported successfully!');
+            }
+            
+            // Load and display wallet
+            await this.loadRightPanelWalletData();
+            this.showWalletDisplaySection();
+            
+        } catch (error) {
+            console.error('[RightPanel] Import wallet error:', error);
+            errorDiv.textContent = 'Error importing wallet: ' + error.message;
+        }
+    }
+    
+    async handleImportProfile() {
+        const fileInput = document.getElementById('profile-file');
+        const errorDiv = document.getElementById('profile-import-error');
+        
+        if (!fileInput || !errorDiv) {
+            console.error('[RightPanel] Required elements not found for profile import');
+            return;
+        }
+        
+        // Clear previous errors
+        errorDiv.textContent = '';
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+            errorDiv.textContent = 'Please select a profile file to import';
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        try {
+            // Read file content
+            const fileContent = await this.readFileAsText(file);
+            
+            // Try to parse as JSON
+            let profileData;
+            try {
+                profileData = JSON.parse(fileContent);
+            } catch (parseError) {
+                errorDiv.textContent = 'Invalid profile file format';
+                return;
+            }
+            
+            // Validate profile data structure
+            if (!profileData.wallet || !profileData.password) {
+                errorDiv.textContent = 'Invalid profile file - missing required data';
+                return;
+            }
+            
+            // Import profile using ebAPI
+            const result = await ebAPI.wallet.importProfile(profileData);
+            if (!result.success) {
+                errorDiv.textContent = 'Error importing profile: ' + result.error;
+                return;
+            }
+            
+            // Show success and wallet display
+            if (modalSystem) {
+                await modalSystem.alert('Profile imported successfully!');
+            }
+            
+            // Load and display wallet
+            await this.loadRightPanelWalletData();
+            this.showWalletDisplaySection();
+            
+        } catch (error) {
+            console.error('[RightPanel] Import profile error:', error);
+            errorDiv.textContent = 'Error importing profile: ' + error.message;
+        }
+    }
+    
+    readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(file);
+        });
+    }
+    
+    async loadRightPanelWalletData() {
+        try {
+            // Auto-connect to GuapcoinX network first
+            await this.connectToGuapcoinX();
+            
+            // Load wallet
+            const walletResult = await ebAPI.wallet.load();
+            if (walletResult.success && walletResult.wallet) {
+                const addressEl = document.getElementById('right-wallet-address');
+                if (addressEl) {
+                    addressEl.textContent = walletResult.wallet.address;
+                }
+            }
+            
+            // Load balance
+            const balanceResult = await ebAPI.wallet.getBalance();
+            if (balanceResult.success) {
+                const balanceEl = document.getElementById('right-wallet-balance');
+                if (balanceEl) {
+                    balanceEl.textContent = balanceResult.balance + ' GUAP';
+                }
+            }
+            
+        } catch (error) {
+            console.error('[RightPanel] Load wallet data error:', error);
+        }
+    }
+    
+    async copyWalletAddress() {
+        const addressEl = document.getElementById('right-wallet-address');
+        if (addressEl && addressEl.textContent) {
+            try {
+                await navigator.clipboard.writeText(addressEl.textContent);
+                if (modalSystem) {
+                    await modalSystem.alert('Address copied to clipboard!');
+                }
+            } catch (error) {
+                console.error('[RightPanel] Copy address error:', error);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = addressEl.textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (modalSystem) {
+                    await modalSystem.alert('Address copied to clipboard!');
+                }
+            }
+        }
+    }
+    
+    async refreshWalletBalance() {
+        await this.loadRightPanelWalletData();
+        if (modalSystem) {
+            await modalSystem.alert('Balance refreshed!');
+        }
+    }
+    
+    async exportProfile() {
+        try {
+            const result = await ebAPI.wallet.exportProfile();
+            if (result.success) {
+                // Create download link
+                const dataStr = JSON.stringify(result.profile, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = 'eb-wallet-profile.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                if (modalSystem) {
+                    await modalSystem.alert('Profile exported successfully!');
+                }
+            } else {
+                if (modalSystem) {
+                    await modalSystem.alert('Error exporting profile: ' + result.error);
+                }
+            }
+        } catch (error) {
+            console.error('[RightPanel] Export profile error:', error);
+            if (modalSystem) {
+                await modalSystem.alert('Error exporting profile: ' + error.message);
+            }
+        }
     }
     
     showWeb3Panel() {

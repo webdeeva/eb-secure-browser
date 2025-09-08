@@ -20,7 +20,7 @@
       "id": "web3",
       "enabled": true,
       "text": "Web3",
-      "icon": "fas fa-cube",
+      "icon": "fas fa-wallet",
       "action": "panel",
       "panel": "web3-panel"
     },

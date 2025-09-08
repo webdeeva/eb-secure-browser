@@ -476,50 +476,12 @@
                 
                 <div class="button-group">
                     <button class="btn btn-secondary" onclick="skipBusiness()">Not a Business Owner</button>
-                    <button class="btn btn-primary" onclick="showBusinessForm()">Yes, List My Business</button>
+                    <button class="btn btn-primary" onclick="openBusinessSubmission()">Yes, List My Business</button>
                 </div>
             </div>
         </div>
 
-        <!-- Step 6: Business Submission Form -->
-        <div class="wizard-step" id="step-business-form">
-            <h2>Quick Business Registration</h2>
-            <p>We'll redirect you to complete your listing after setup</p>
-            
-            <div class="input-group">
-                <label>Business Name</label>
-                <input type="text" id="businessName" placeholder="Enter your business name">
-            </div>
-            
-            <div class="input-group">
-                <label>Business Type</label>
-                <select id="businessType">
-                    <option value="">Select a category</option>
-                    <option value="restaurant">Restaurant/Food</option>
-                    <option value="retail">Retail/Shopping</option>
-                    <option value="services">Professional Services</option>
-                    <option value="tech">Technology</option>
-                    <option value="health">Health & Wellness</option>
-                    <option value="beauty">Beauty & Hair</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label>Contact Email</label>
-                <input type="email" id="businessEmail" placeholder="your@email.com">
-            </div>
-
-            <p style="color: #999; font-size: 14px; margin-top: 20px;">
-                After setup, you'll be redirected to complete your full business profile
-            </p>
-            
-            <div class="button-group">
-                <button class="btn btn-secondary" onclick="skipBusinessForm()">Skip for Now</button>
-                <button class="btn btn-primary" onclick="saveBusinessInfo()">Continue</button>
-            </div>
-        </div>
+        <!-- Business form removed - redirects directly to website -->
 
         <!-- Step 7: Wallet Setup -->
         <div class="wizard-step" id="step-wallet">
@@ -750,33 +712,15 @@
             showStep(currentStep);
         }
 
-        function showBusinessForm() {
-            // Insert business form step if not already there
-            if (!steps.includes('step-business-form')) {
-                steps.splice(steps.indexOf('step-business') + 1, 0, 'step-business-form');
-            }
+        function openBusinessSubmission() {
+            // Open business submission page immediately
+            window.open('https://everythingblack.xyz/business-submission', '_blank');
+            // Continue to next step
             nextStep();
         }
 
-        function skipBusinessForm() {
-            currentStep = steps.indexOf('step-wallet');
-            showStep(currentStep);
-        }
 
-        function saveBusinessInfo() {
-            businessInfo = {
-                name: document.getElementById('businessName').value,
-                type: document.getElementById('businessType').value,
-                email: document.getElementById('businessEmail').value
-            };
-            
-            // Store for later submission
-            if (businessInfo.name && businessInfo.email) {
-                localStorage.setItem('pendingBusinessSubmission', JSON.stringify(businessInfo));
-            }
-            
-            nextStep();
-        }
+        // Business form removed - submission happens on website
 
         function skipWallet() {
             // Skip to complete
@@ -842,8 +786,8 @@
                         <h3 style="color: #f78513;">Ready to Create Your Wallet!</h3>
                         <p style="font-size: 16px; margin: 20px 0;">To create your GuapcoinX wallet:</p>
                         <ol style="text-align: left; font-size: 15px; line-height: 1.8; max-width: 400px; margin: 0 auto;">
-                            <li>Look for the <strong style="color: #f78513;">Web3/GuapcoinX</strong> button in the left sidebar</li>
-                            <li>Click it to open the wallet panel on the right</li>
+                            <li>Look for the <i class="fas fa-wallet" style="color: #f78513;"></i> <strong style="color: #f78513;">wallet icon</strong> in the left sidebar</li>
+                            <li>Click it to open the GuapcoinX wallet panel on the right</li>
                             <li>Click <strong style="color: #f78513;">"Create New Wallet"</strong> to get started</li>
                         </ol>
                         <div style="margin-top: 30px;">
@@ -858,8 +802,8 @@
                     <h3 style="color: #f78513;">Ready to Create Your Wallet!</h3>
                     <p style="font-size: 16px; margin: 20px 0;">To create your GuapcoinX wallet:</p>
                     <ol style="text-align: left; font-size: 15px; line-height: 1.8; max-width: 400px; margin: 0 auto;">
-                        <li>Look for the <strong style="color: #f78513;">Web3/GuapcoinX</strong> button in the left sidebar</li>
-                        <li>Click it to open the wallet panel on the right</li>
+                        <li>Look for the <i class="fas fa-wallet" style="color: #f78513;"></i> <strong style="color: #f78513;">wallet icon</strong> in the left sidebar</li>
+                        <li>Click it to open the GuapcoinX wallet panel on the right</li>
                         <li>Click <strong style="color: #f78513;">"Create New Wallet"</strong> to get started</li>
                     </ol>
                     <div style="margin-top: 30px;">
@@ -898,13 +842,7 @@
                 console.log('🔧 DEV MODE: Not saving wizard completion');
             }
             
-            // Check if we need to redirect to business submission
-            const pendingBusiness = localStorage.getItem('pendingBusinessSubmission');
-            if (pendingBusiness) {
-                // Open business submission page in new tab
-                window.open('https://everythingblack.info/submit-business', '_blank');
-                localStorage.removeItem('pendingBusinessSubmission');
-            }
+            // Business submission is now handled directly in openBusinessSubmission()
             
             // Close wizard and go to main browser
             window.location.href = 'landing.html';

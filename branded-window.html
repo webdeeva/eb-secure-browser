@@ -261,7 +261,7 @@
     </div>
     
     <script>
-        const { ipcRenderer } = require('electron');
+        // Use the secure API exposed by preload script
         const webview = document.getElementById('branded-webview');
         const loadingOverlay = document.getElementById('loading');
         const backBtn = document.getElementById('back-btn');
@@ -285,17 +285,23 @@
         // Load the URL
         webview.setAttribute('src', targetUrl);
         
-        // Window controls
+        // Window controls using electronAPI
         minimizeBtn.addEventListener('click', () => {
-            ipcRenderer.send('window-control', 'minimize');
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('window-control', 'minimize');
+            }
         });
         
         maximizeBtn.addEventListener('click', () => {
-            ipcRenderer.send('window-control', 'maximize');
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('window-control', 'maximize');
+            }
         });
         
         closeBtn.addEventListener('click', () => {
-            ipcRenderer.send('window-control', 'close');
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('window-control', 'close');
+            }
         });
         
         // Navigation controls
@@ -313,7 +319,9 @@
         
         externalBtn.addEventListener('click', () => {
             const currentUrl = webview.getURL();
-            ipcRenderer.send('open-external', currentUrl);
+            if (window.electronAPI && window.electronAPI.send) {
+                window.electronAPI.send('open-external', currentUrl);
+            }
         });
         
         // Webview events
@@ -350,14 +358,16 @@
         });
         
         // Handle maximize button icon
-        ipcRenderer.on('window-maximized', (event, isMaximized) => {
-            const icon = maximizeBtn.querySelector('i');
-            if (isMaximized) {
-                icon.className = 'fas fa-clone';
-            } else {
-                icon.className = 'fas fa-square';
-            }
-        });
+        if (window.electronAPI && window.electronAPI.on) {
+            window.electronAPI.on('window-maximized', (event, isMaximized) => {
+                const icon = maximizeBtn.querySelector('i');
+                if (isMaximized) {
+                    icon.className = 'fas fa-clone';
+                } else {
+                    icon.className = 'fas fa-square';
+                }
+            });
+        }
     </script>
 </body>
 </html>

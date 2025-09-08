@@ -75,7 +75,7 @@
                 <div id="history-panel" class="panel"></div>
                 
                 <button id="toggle-web3" class="sidebar-button">
-                    <span class="icon"><i class="fas fa-cube"></i></span>
+                    <span class="icon"><i class="fas fa-wallet"></i></span>
                     <span class="text">Web3</span>
                 </button>
                 
@@ -150,6 +150,19 @@
                         
                         <!-- Wallet Interface Section -->
                         <div id="wallet-interface-section" style="display: none;">
+                            <!-- Seed Phrase Backup Section (shown only on creation) -->
+                            <div id="seed-phrase-section" style="display: none; background: #2a1810; border: 2px solid #ff6c2f; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <h3 style="color: #ff6c2f; margin-top: 0;">⚠️ IMPORTANT: Back Up Your Seed Phrase</h3>
+                                <p style="color: #f0f0f0; margin-bottom: 15px;">Write down these words in order. This is the ONLY way to recover your wallet. Never share it with anyone!</p>
+                                <div id="seed-phrase-display" style="background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 14px; color: #fff; word-spacing: 10px; line-height: 1.8; margin-bottom: 15px;"></div>
+                                <button id="copy-seed-phrase" class="wallet-btn" style="background: #ff6c2f; color: #1a1a1a; margin-right: 10px;">
+                                    <i class="fas fa-copy"></i> Copy Seed Phrase
+                                </button>
+                                <button id="confirm-seed-backup" class="wallet-btn" style="background: #ff6c2f; color: #1a1a1a;">
+                                    <i class="fas fa-check"></i> I've Saved My Seed Phrase
+                                </button>
+                            </div>
+                            
                             <div class="wallet-info">
                                 <div class="wallet-address">
                                     <strong>Address:</strong>
@@ -210,14 +223,14 @@
                             <div id="wallet-info" style="display: none;">
                                 <div class="wallet-address">
                                     <strong>Address:</strong>
-                                    <span id="wallet-address"></span>
-                                    <button id="copy-address" class="copy-btn" title="Copy Address">
+                                    <span id="left-wallet-address"></span>
+                                    <button id="left-copy-address" class="copy-btn" title="Copy Address">
                                         <i class="fas fa-copy"></i>
                                     </button>
                                 </div>
                                 <div class="wallet-balance">
                                     <strong>Balance:</strong>
-                                    <span id="wallet-balance">0.0000 GUAP</span>
+                                    <span id="left-wallet-balance">0.0000 GUAP</span>
                                     <button id="refresh-balance" class="refresh-btn" title="Refresh Balance">
                                         <i class="fas fa-sync-alt"></i>
                                     </button>
@@ -228,7 +241,7 @@
                                     <div class="token-header">
                                         <h4>Tokens</h4>
                                     </div>
-                                    <button id="import-token-btn" class="wallet-btn">
+                                    <button id="right-panel-import-token-btn" class="wallet-btn">
                                         <i class="fas fa-plus"></i> Import Token
                                     </button>
                                     <div id="token-list" class="token-list">
@@ -529,16 +542,42 @@
             </div>
             
             <div id="wallet-display" style="display: none;">
+                <!-- Seed Phrase Backup Section for Right Panel -->
+                <div id="right-panel-seed-phrase-section" style="display: none; background: #2a1810; border: 2px solid #ff6c2f; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                    <h3 style="color: #ff6c2f; margin-top: 0;">⚠️ IMPORTANT: Back Up Your Seed Phrase</h3>
+                    <p style="color: #f0f0f0; margin-bottom: 15px;">Write down these words in order. This is the ONLY way to recover your wallet. Never share it with anyone!</p>
+                    <div id="right-panel-seed-phrase-display" style="background: #1a1a1a; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 14px; color: #fff; word-spacing: 10px; line-height: 1.8; margin-bottom: 15px;"></div>
+                    <button id="right-panel-copy-seed-phrase" class="wallet-btn" style="background: #ff6c2f; color: #1a1a1a; margin-right: 10px;">
+                        <i class="fas fa-copy"></i> Copy Seed Phrase
+                    </button>
+                    <button id="right-panel-confirm-seed-backup" class="wallet-btn" style="background: #ff6c2f; color: #1a1a1a;">
+                        <i class="fas fa-check"></i> I've Saved My Seed Phrase
+                    </button>
+                </div>
+                
                 <div class="wallet-address-container">
                     <h3>Your Wallet Address</h3>
-                    <div id="wallet-address" class="wallet-address"></div>
-                    <button id="copy-address" class="wallet-btn small-btn">Copy</button>
-                    <button id="refresh-balance" class="wallet-btn small-btn">Refresh</button>
+                    <div id="right-wallet-address" class="wallet-address"></div>
+                    <button id="right-copy-address" class="wallet-btn small-btn">Copy</button>
+                    <button id="right-refresh-balance" class="wallet-btn small-btn">Refresh</button>
                 </div>
                 <div class="wallet-balance-container">
                     <h3>Balance</h3>
-                    <div id="wallet-balance" class="wallet-balance">0.0000 GUAP</div>
+                    <div id="right-wallet-balance" class="wallet-balance">0.0000 GUAP</div>
                 </div>
+                <!-- Token Section for Right Panel -->
+                <div class="token-section" style="margin-top: 20px;">
+                    <div class="token-header">
+                        <h4>Tokens</h4>
+                    </div>
+                    <button id="right-panel-import-token-btn" class="wallet-btn">
+                        <i class="fas fa-plus"></i> Import Token
+                    </button>
+                    <div id="right-panel-token-list" class="token-list">
+                        <!-- Tokens will be displayed here -->
+                    </div>
+                </div>
+                
                 <button id="lock-wallet" class="wallet-btn">Lock Wallet</button>
                 <button id="export-profile" class="wallet-btn">Export Profile</button>
             </div>
@@ -550,7 +589,7 @@
                     <div><strong>Chain ID:</strong> 71111</div>
                     <div><strong>Explorer:</strong> https://explorer.guapcoinx.com</div>
                 </div>
-                <button id="connect-network">Connect to GuapcoinX</button>
+                <button id="right-connect-network">Connect to GuapcoinX</button>
             </div>
             
             <div id="transaction-section" style="display: none;">

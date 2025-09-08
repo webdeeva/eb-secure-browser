@@ -1122,27 +1122,59 @@ webview.active {
 /* Wallet styles */
 .wallet-btn {
     width: 100%;
-    padding: 10px;
+    padding: 12px 16px;
     background: #C44901;
-    border: none;
-    border-radius: 4px;
+    border: 1px solid #893200;
+    border-radius: 6px;
     color: #fff;
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-size: 14px;
-    transition: background-color 0.2s ease;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .wallet-btn:hover {
     background: #d65502;
+    border-color: #f78513;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wallet-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .wallet-btn.danger {
-    background: #F78513;
+    background: #dc3545;
+    border-color: #a71e2a;
 }
 
 .wallet-btn.danger:hover {
-    background: #ff9933;
+    background: #e64454;
+    border-color: #dc3545;
+}
+
+.wallet-btn:disabled {
+    background: #666;
+    border-color: #555;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.wallet-btn:disabled:hover {
+    background: #666;
+    border-color: #555;
+    transform: none;
+    box-shadow: none;
 }
 
 #wallet-section {
@@ -1318,19 +1350,35 @@ webview.active {
     color: rgba(196, 73, 1, 0.5);
 }
 
-#connect-network {
+#connect-network, #right-connect-network {
     width: 100%;
-    padding: 8px 12px;
-    background: #C44901;
-    border: none;
-    border-radius: 4px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #c44901 0%, #f78513 100%);
+    border: 1px solid #f78513;
+    border-radius: 8px;
     color: #fff;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(199, 73, 1, 0.2);
+    font-size: 14px;
 }
 
-#connect-network:hover {
-    background: #d65502;
+#connect-network:hover:not(:disabled), #right-connect-network:hover:not(:disabled) {
+    background: linear-gradient(135deg, #d65502 0%, #ff9933 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(199, 73, 1, 0.3);
+}
+
+/* Connected state styling */
+#connect-network:disabled, #right-connect-network:disabled {
+    background: linear-gradient(135deg, #2a7f2a 0%, #4CAF50 100%);
+    border-color: #4CAF50;
+    cursor: not-allowed;
+    opacity: 0.95;
+    box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);
 }
 
 .network-info {
@@ -1731,8 +1779,59 @@ webview.active {
     font-size: 16px;
 }
 
-#import-token-btn {
+#import-token-btn, #right-panel-import-token-btn {
+    width: 100%;
     margin-bottom: 15px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #933600 0%, #c44901 100%);
+    border: 1px solid #c44901;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(147, 54, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+#import-token-btn:hover, #right-panel-import-token-btn:hover {
+    background: linear-gradient(135deg, #c44901 0%, #f78513 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(196, 73, 1, 0.3);
+}
+
+#import-token-btn i, #right-panel-import-token-btn i {
+    font-size: 16px;
+}
+
+/* Right Panel Import Token Button Specific Styling */
+#right-panel-import-token-btn {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #933600 0%, #c44901 100%);
+    border: 1px solid #c44901;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(147, 54, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+#right-panel-import-token-btn:hover {
+    background: linear-gradient(135deg, #c44901 0%, #f78513 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(196, 73, 1, 0.3);
 }
 
 .token-list {
@@ -2041,6 +2140,389 @@ webview.active {
 .pulse-highlight {
     animation: pulse-highlight 2s infinite;
     border: 2px solid #f78513 !important;
+}
+
+/* Web3 Right Panel Wallet Form Styling */
+#web3-right-panel {
+    color: #fff;
+}
+
+#web3-right-panel input[type="password"],
+#web3-right-panel input[type="text"],
+#web3-right-panel input[type="number"],
+#web3-right-panel input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #C44901;
+    border-radius: 6px;
+    background: #0a0a0a;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+#web3-right-panel input[type="password"]:focus,
+#web3-right-panel input[type="text"]:focus,
+#web3-right-panel input[type="number"]:focus {
+    outline: none;
+    border-color: #f78513;
+    background: #121212;
+    box-shadow: 0 0 8px rgba(247, 133, 19, 0.3);
+}
+
+#web3-right-panel input[type="password"]::placeholder,
+#web3-right-panel input[type="text"]::placeholder,
+#web3-right-panel input[type="number"]::placeholder {
+    color: rgba(196, 73, 1, 0.6);
+}
+
+#web3-right-panel textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #C44901;
+    border-radius: 6px;
+    background: #0a0a0a;
+    color: #fff;
+    font-size: 14px;
+    font-family: monospace;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#web3-right-panel textarea:focus {
+    outline: none;
+    border-color: #f78513;
+    background: #121212;
+    box-shadow: 0 0 8px rgba(247, 133, 19, 0.3);
+}
+
+#web3-right-panel textarea::placeholder {
+    color: rgba(196, 73, 1, 0.6);
+}
+
+/* File input styling */
+#web3-right-panel input[type="file"] {
+    padding: 8px;
+    cursor: pointer;
+    color: #C44901;
+}
+
+#web3-right-panel input[type="file"]::-webkit-file-upload-button {
+    background: #C44901;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin-right: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s ease;
+}
+
+#web3-right-panel input[type="file"]::-webkit-file-upload-button:hover {
+    background: #f78513;
+}
+
+/* Section headings */
+#web3-right-panel h3 {
+    color: #f78513;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(247, 133, 19, 0.3);
+}
+
+#web3-right-panel h4 {
+    color: #C44901;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+/* Wallet sections styling */
+#web3-right-panel .wallet-setup,
+#web3-right-panel .password-setup,
+#web3-right-panel .lock-screen {
+    background: rgba(7, 7, 7, 0.9);
+    border: 1px solid #161616;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Wallet display sections */
+#wallet-create-section,
+#wallet-import-section,
+#profile-import-section {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #C44901;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#wallet-display {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #C44901;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Wallet address and balance containers */
+.wallet-address-container,
+.wallet-balance-container {
+    background: #161616;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.wallet-address-container h3,
+.wallet-balance-container h3 {
+    color: #f78513;
+    font-size: 16px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(247, 133, 19, 0.2);
+}
+
+#wallet-address,
+#wallet-balance {
+    font-family: monospace;
+    font-size: 14px;
+    word-break: break-all;
+    color: #C44901;
+    margin-bottom: 10px;
+}
+
+/* Small buttons styling */
+.small-btn {
+    width: auto !important;
+    display: inline-block;
+    padding: 6px 12px !important;
+    margin: 0 5px 0 0 !important;
+    font-size: 12px !important;
+    min-width: 60px;
+}
+
+/* Error messages in right panel */
+#web3-right-panel .error-message {
+    background: rgba(220, 53, 69, 0.15);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #ff6b7a;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+/* Network settings in right panel */
+#web3-right-panel .network-settings {
+    background: rgba(22, 22, 22, 0.8);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#web3-right-panel .network-info {
+    background: #0a0a0a;
+    border: 1px solid #C44901;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    font-family: monospace;
+}
+
+#web3-right-panel .network-info div {
+    color: #C44901;
+    margin-bottom: 8px;
+    word-break: break-all;
+}
+
+#web3-right-panel .network-info strong {
+    color: #f78513;
+    display: inline-block;
+    width: 80px;
+}
+
+/* Transaction section styling */
+#web3-right-panel #transaction-section {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #C44901;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* GuapcoinX Logo in right panel */
+#web3-right-panel .guapcoinx-logo {
+    text-align: center;
+    padding: 10px 0 20px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(247, 133, 19, 0.3);
+}
+
+#web3-right-panel .guapcoinx-logo img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(247, 133, 19, 0.4));
+    transition: all 0.3s ease;
+}
+
+#web3-right-panel .guapcoinx-logo img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 15px rgba(247, 133, 19, 0.6));
+}
+
+/* Wallet setup buttons spacing */
+#wallet-setup-section {
+    text-align: center;
+    padding: 20px;
+}
+
+#wallet-setup-section .wallet-btn {
+    margin-bottom: 15px;
+}
+
+#wallet-setup-section .wallet-btn:last-child {
+    margin-bottom: 0;
+}
+
+/* Profile import section styling */
+#web3-right-panel .profile-import-section {
+    background: rgba(7, 7, 7, 0.7);
+    border: 1px solid rgba(196, 73, 1, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#web3-right-panel .profile-import-section p {
+    color: rgba(196, 73, 1, 0.8);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* Send to container improvements */
+.send-to-container {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+/* Domain status improvements */
+.domain-status {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Loading states */
+.wallet-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wallet-btn.loading::after {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 8px;
+}
+
+/* Password strength indicator */
+.password-strength {
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    background: #dc3545;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.password-strength-bar.weak {
+    background: #dc3545;
+    width: 33%;
+}
+
+.password-strength-bar.medium {
+    background: #f78513;
+    width: 66%;
+}
+
+.password-strength-bar.strong {
+    background: #28a745;
+    width: 100%;
+}
+
+/* Improved scrollbar for right panel */
+#web3-right-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+#web3-right-panel::-webkit-scrollbar-track {
+    background: rgba(22, 22, 22, 0.5);
+    border-radius: 4px;
+}
+
+#web3-right-panel::-webkit-scrollbar-thumb {
+    background: rgba(196, 73, 1, 0.6);
+    border-radius: 4px;
+}
+
+#web3-right-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(247, 133, 19, 0.8);
+}
+
+/* Responsive adjustments for right panel */
+@media (max-width: 1200px) {
+    #web3-right-panel {
+        width: 350px;
+    }
+}
+
+@media (max-width: 768px) {
+    #web3-right-panel {
+        width: 300px;
+    }
+    
+    #web3-right-panel input,
+    #web3-right-panel textarea {
+        font-size: 13px;
+        padding: 10px;
+    }
+    
+    #web3-right-panel .wallet-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
 }
 
 

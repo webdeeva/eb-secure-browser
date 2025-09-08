@@ -4,8 +4,8 @@ const path = require('path');
 class EBDomainResolver {
   constructor() {
     // Guapcoin X RPC endpoints
-    this.primaryRpc = 'https://rpc-mainnet-2.guapcoinx.com';
-    this.fallbackRpc = 'https://rpc-mainnet.guapcoinx.com';
+    this.primaryRpc = 'https://rpc-mainnet.guapcoinx.com';
+    this.fallbackRpc = 'https://rpc-mainnet-2.guapcoinx.com';
     
     // Initialize provider with primary RPC
     this.initializeProvider();

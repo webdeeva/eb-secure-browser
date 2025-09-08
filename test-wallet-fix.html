@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Fix Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .btn {
+            background: #ff6c2f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .result {
+            background: #2a1810;
+            border: 1px solid #ff6c2f;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { border-color: #4CAF50; background: #1a2a1a; }
+        .error { border-color: #f44336; background: #2a1a1a; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Everything Black Wallet Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>📡 API Connection Test</h2>
+        <button class="btn" onclick="testApiConnection()">Test API Connection</button>
+        <div id="api-result" class="result">Click the button to test</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔗 Network Connection Test</h2>
+        <button class="btn" onclick="testNetworkConnection()">Test Network Connection</button>
+        <div id="network-result" class="result">Click the button to test</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>💼 Wallet Address Test</h2>
+        <button class="btn" onclick="testWalletAddress()">Test Get Wallet Address</button>
+        <div id="wallet-result" class="result">Click the button to test</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎛️ HTML ID Test</h2>
+        <button class="btn" onclick="testHtmlIds()">Test Duplicate ID Fix</button>
+        <div id="html-result" class="result">Click the button to test</div>
+    </div>
+
+    <script>
+        // Test API connection
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('api-result');
+            
+            try {
+                if (typeof ebAPI === 'undefined') {
+                    resultDiv.textContent = '❌ ebAPI not available - preload script issue';
+                    resultDiv.className = 'result error';
+                    return;
+                }
+                
+                if (typeof ebAPI.wallet === 'undefined') {
+                    resultDiv.textContent = '❌ ebAPI.wallet not available';
+                    resultDiv.className = 'result error';
+                    return;
+                }
+                
+                if (typeof ebAPI.wallet.connectNetwork === 'undefined') {
+                    resultDiv.textContent = '❌ ebAPI.wallet.connectNetwork not available';
+                    resultDiv.className = 'result error';
+                    return;
+                }
+                
+                resultDiv.textContent = '✅ All API endpoints available';
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.textContent = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test network connection
+        async function testNetworkConnection() {
+            const resultDiv = document.getElementById('network-result');
+            resultDiv.textContent = '🔄 Testing network connection...';
+            
+            try {
+                const result = await ebAPI.wallet.connectNetwork(
+                    'https://rpc-mainnet-2.guapcoinx.com',
+                    71111,
+                    'https://rpc-mainnet-1.guapcoinx.com'
+                );
+                
+                if (result.success) {
+                    resultDiv.textContent = '✅ Network connection successful: ' + JSON.stringify(result);
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ Network connection failed: ' + (result.error || 'Unknown error');
+                    resultDiv.className = 'result error';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent = '❌ Error calling connectNetwork: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test wallet address retrieval
+        async function testWalletAddress() {
+            const resultDiv = document.getElementById('wallet-result');
+            resultDiv.textContent = '🔄 Testing wallet address...';
+            
+            try {
+                const address = await ebAPI.wallet.getAddress();
+                
+                if (address) {
+                    resultDiv.textContent = '✅ Wallet address retrieved: ' + address;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = '⚠️ No wallet address found (wallet may not be created/unlocked)';
+                    resultDiv.className = 'result error';
+                }
+                
+            } catch (error) {
+                resultDiv.textContent = '❌ Error getting address: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test HTML ID fix
+        function testHtmlIds() {
+            const resultDiv = document.getElementById('html-result');
+            
+            // Test for unique IDs in the parent document
+            const mainWalletAddress = parent.document.getElementById('wallet-address');
+            const leftWalletAddress = parent.document.getElementById('left-wallet-address');
+            const rightWalletAddress = parent.document.getElementById('right-wallet-address');
+            
+            let results = [];
+            
+            if (mainWalletAddress) {
+                results.push('✅ wallet-address element found');
+            } else {
+                results.push('❌ wallet-address element missing');
+            }
+            
+            if (leftWalletAddress) {
+                results.push('✅ left-wallet-address element found');
+            } else {
+                results.push('❌ left-wallet-address element missing');
+            }
+            
+            if (rightWalletAddress) {
+                results.push('✅ right-wallet-address element found');
+            } else {
+                results.push('❌ right-wallet-address element missing');
+            }
+            
+            // Check if all elements are unique
+            if (mainWalletAddress && leftWalletAddress && rightWalletAddress) {
+                results.push('✅ All wallet address elements have unique IDs');
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.className = 'result error';
+            }
+            
+            resultDiv.textContent = results.join('\n');
+        }
+
+        // Auto-run basic tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testApiConnection();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
